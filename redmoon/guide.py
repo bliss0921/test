@@ -48,11 +48,13 @@ def b(text):
 # 아카에 올린 사진 주소 (편집기에서 받은 그대로) / 미리보기용 로컬 파일
 ARCA = "//ac.arca.live/20261010sac/"
 IMG = {
-    "toggle": (ARCA + "5a8b417e7bd5250a31a603ed4ac42b83eebc892ac07522cfcd276f327578eee2.png?expires=1791614527&key=wXMxgHH36EakmoV1i8VSSQ",
+    "long": (ARCA + "9192a4d61d9edc9e3fa85e06e98ea23b35ce8480cbe28fc17313f99969f2a836.png?expires=1791621222&key=aHkS1SWeKBG8pJQzHVDmQA",
+             "redmoon_full.png"),
+    "toggle": (ARCA + "5a8b417e7bd5250a31a603ed4ac42b83eebc892ac07522cfcd276f327578eee2.png?expires=1791621169&key=-gic8GAIuOX8m9Jqe9Fo7Q",
                "../img/ui_toggle.png"),
-    "slang": (ARCA + "1fb06ddc1ea9aa3f6cff4fc7b49b1ee14696847e4fba4cea20a64f4e48772acf.png?expires=1791614507&key=fLox_IsQ-dF2omT-AoySzA",
+    "slang": (ARCA + "1fb06ddc1ea9aa3f6cff4fc7b49b1ee14696847e4fba4cea20a64f4e48772acf.png?expires=1791621169&key=lv-xfpOc6Z1zcwmJxw1eFQ",
               "../img/ui_slang.png"),
-    "card": (ARCA + "d4917dde027488050bc76626992b863c94de898f70b0e8ca2e9c6ec13d034eb1.png?expires=1791614770&key=9OoEUcuAJLUJRe9TDwhwBA",
+    "card": (ARCA + "d4917dde027488050bc76626992b863c94de898f70b0e8ca2e9c6ec13d034eb1.png?expires=1791621169&key=TOW-Sr4wt1j-91S9CFNJ1A",
              "../img/card_redmoon.webp"),
 }
 
@@ -74,13 +76,35 @@ def finale(local):
              + d("display:inline-block;width:360px;max-width:100%;margin-top:16px;", img("card", local)))
 
 
+def a(url, text):
+    return f'<a href="{url}" target="_blank" rel="noopener noreferrer">{text}</a>'
+
+
+THANKS = [
+    ("https://arca.live/b/characterai/172290292",
+     "[합법허가/남캐♂️] 캘런NPC 이탈리아산프로골키퍼플러팅장인다정남 주세페 리치 등장 😉 +벨라삽화태그추가",
+     "삽화모듈 로어북양식을 긴빠이했음. 감사합니다."),
+    ("https://arca.live/b/characterai/170670591", "캐릭터/세계관 빌딩 SKILLS FOR CODEX / CLAUDE",
+     "개조해서 캐릭터시트 짜는데 활용했음. 감사합니다."),
+    ("https://arca.live/b/characterai/177246332", "📘HTML Guide v6.5.md - 아카라이브 HTML 작성 가이드",
+     "소개글 꾸밀때 사용함 감사합니다."),
+    ("https://arca.live/b/characterai/160433065", "🤫나만 아는 챗질 100배 꿀빠는 비법 소스 공개",
+     "일기를 정규식으로 바꾸는 아이디어 제공. 감사합니다."),
+    ("https://arca.live/b/characterai/167202931", "자기소개형 캐릭터시트V3 최종",
+     "이거로 npc 시트 작성함 감사합니다."),
+    ("https://arca.live/b/characterai/176597252", "♂️이상성욕)(하드ver)배뇨조절장애 만들어서 방생해주는 봇🎶",
+     "나한테 봇토글 기능이 생겼다는걸 알려줬음. 사이드패널에서 해방되어 두고두고 잘쓰고있음. 감사합니다."),
+    ("https://arca.live/b/characterai/160705243", "🔞 ✝️십자가와 초승달☪️ 대튀르크 전쟁 (feat.송지은) [V1]",
+     "사전넣는 아이디어를 생각함. 감사합니다."),
+]
+
+
 def build(local=False):
     hero = d(f"background:{BAND};",
              d("padding:50px 22px 38px;text-align:center;"
                "background:linear-gradient(180deg,#ffffff 0%,rgba(255,255,255,0.94) 42%,rgba(255,255,255,0) 100%);",
                d(f"font-family:{SERIF};font-size:40px;line-height:1.2;font-weight:900;letter-spacing:7px;color:{INK};",
                  "RED MOON")
-               + d("font-size:14px;font-weight:700;letter-spacing:2px;margin-top:8px;", "신논현역 소재 호스트바")
                + deco(f"width:120px;height:3px;margin:20px auto 0;border-radius:3px;background:{BAR}")))
 
     info = section("봇 정보", [
@@ -109,7 +133,7 @@ def build(local=False):
            "레블은 섹파 스타트하거나 예쁘고 몸매 좋은 애로 꼬시면 재밌겠다고 2차 감. "
            "주윤이는 호빠 말고 게이바 스타트하는 게 빠름. "
            "모두의 공용 암캐가 되고 싶다면 호빠 선수들 스트레스 해소용 성처리 당번이 되어봅시다. "
-           "돈 받고 일한다 하면 오푸스 검열도 안 하고 페티시 개잘 말아줌."),
+           "돈 받고 일한다 하면 오푸스 검열도 안 하고 페티시 개잘 말아줌. 잼은 살짝 인풋으로 유도를 해야 함."),
         li("주윤이랑은 게이플만 해서 헤테로로 어떻게 나올진 잘 모르겠음."),
     ])
 
@@ -123,13 +147,16 @@ def build(local=False):
            "그거 잡겠다고 토큰 낭비하기 싫어서 난 걍 흐린 눈 함. 서후 본명 개싫어함."),
     ])
 
+    thanks = section("Thanks to", [li(f'{a(url, title)} ({note})') for url, title, note in THANKS])
+
     floor = d(f"background:{BAND};",
               deco("height:40px;background:linear-gradient(180deg,#ffffff,rgba(255,255,255,0))"))
 
     html = d(f"max-width:860px;margin:0 auto;background:linear-gradient(180deg,#ffffff,#ffffff);border:1px solid {LINE};"
              f"color:{TEXT};font-family:{SANS};",
-             hero + d("padding:0 26px 48px;", info + test + play + notes + finale(local)) + floor)
-    return dark_guard(html)
+             hero + d("padding:0 26px 48px;", info + test + play + notes + thanks + finale(local)) + floor)
+    top = f'<p style="text-align:center;">{img("long", local).replace(' style="width:100%;"', "")}</p><p><br></p>'
+    return dark_guard(top + html)
 
 
 def dark_guard(html):
