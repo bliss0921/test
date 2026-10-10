@@ -156,7 +156,7 @@ def build(local=False):
 
     # 바깥 상자 없이: 맨 위 띠 → 본문 → 바닥 띠 (사용자가 상자를 뺀 구조)
     html = hero + d("padding:0 4px 48px;", info + test + play + notes + thanks + finale(local)) + floor
-    top = f'<p style="text-align:center;">{img("long", local).replace(' style="width:100%;"', "")}</p><p><br></p>'
+    top = f'<p style="text-align:center;">{img("long", local).replace(' style="width:100%;"', "")}</p>'
     return dark_guard(top + html)
 
 
