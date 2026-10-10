@@ -1,6 +1,7 @@
 # RED MOON 인물소개 시안 생성기
-# python3 gen.py  ->  out/draft_A.html ... out/draft_D.html
+# python3 gen.py  ->  out/draft_A.html ... out/draft_D.html, out/draft_W1~W3.html (B 흰 배경판)
 # python3 render.py out/draft_A.html out/draft_A.png ...
+import math
 import os
 
 W = 1000
@@ -67,14 +68,15 @@ POP = 95          # 위 칸으로 튀어나오는 정도(머리 꼭대기 기준
 TEXT_W = 400
 
 
-def photo(i, ch, fade=True):
+def photo(i, ch, fade=True, gap=True):
     if ch["side"] == "L":
         left = -20
     else:
         left = W - PH_W + 20
     hx = left + PH_W * 0.45
     top = band_top(i, hx) - POP
-    pts = [(0, 0), (PH_W, 0), (PH_W, band_bot(i, left + PH_W) - top), (0, band_bot(i, left) - top)]
+    bot = band_bot if gap else (lambda i, x: line_y(i + 1, x))
+    pts = [(0, 0), (PH_W, 0), (PH_W, bot(i, left + PH_W) - top), (0, bot(i, left) - top)]
     m = ""
     if fade:
         d = "90deg" if ch["side"] == "L" else "270deg"
@@ -177,30 +179,77 @@ def draft_A():
 
 
 # ───────────────────────── B. 달(Moon) + 영문 이름
+B_TYPE_CSS = """
+.enb{font-family:'Cormorant',serif;font-style:italic;font-weight:500;font-size:64px;line-height:1;color:var(--acc);
+ letter-spacing:1px;margin-bottom:-6px;opacity:.9}
+.name{font-family:'Gowun Batang',serif;font-weight:700;letter-spacing:-2px;font-size:96px}
+.name small{font-family:'Noto Sans CJK KR',sans-serif}
+"""
+
+
+def moon_divs(i, ch, r=300):
+    # 인물 머리 뒤에 달
+    cx = 245 if ch["side"] == "L" else W - 245
+    cy = band_top(i, cx) + 330
+    return (f'<div class="moon" style="left:{cx - r}px;top:{cy - r:.0f}px;width:{2 * r}px;height:{2 * r}px"></div>'
+            f'<div class="ring" style="left:{cx - r - 22}px;top:{cy - r - 22:.0f}px;width:{2 * r + 44}px;height:{2 * r + 44}px"></div>')
+
+
 def draft_B():
     css = """
 .band{background:linear-gradient(160deg,var(--band) 0%,var(--soft) 48%,var(--band) 100%)}
 .moon{position:absolute;border-radius:50%;
  background:radial-gradient(circle at 50% 38%,#ffffffcc 0%,#ffffff00 46%),linear-gradient(180deg,var(--deep) 0%,var(--band) 92%)}
 .ring{position:absolute;border-radius:50%;border:1.5px solid var(--acc);opacity:.28}
-.enb{font-family:'Cormorant',serif;font-style:italic;font-weight:500;font-size:64px;line-height:1;color:var(--acc);
- letter-spacing:1px;margin-bottom:-6px;opacity:.9}
-.name{font-family:'Gowun Batang',serif;font-weight:700;letter-spacing:-2px;font-size:96px}
-.name small{font-family:'Noto Sans CJK KR',sans-serif}
-"""
+""" + B_TYPE_CSS
     body = []
     for i, ch in enumerate(CHARS):
-        # 인물 머리 뒤에 달
-        r = 300
-        cx = 245 if ch["side"] == "L" else W - 245
-        cy = band_top(i, cx) + 330
-        body.append(
-            f'<div class="band c{i}" style="clip-path:{band_poly(i)}">'
-            f'<div class="moon" style="left:{cx - r}px;top:{cy - r:.0f}px;width:{2 * r}px;height:{2 * r}px"></div>'
-            f'<div class="ring" style="left:{cx - r - 22}px;top:{cy - r - 22:.0f}px;width:{2 * r + 44}px;height:{2 * r + 44}px"></div>'
-            f'</div>')
+        body.append(f'<div class="band c{i}" style="clip-path:{band_poly(i)}">{moon_divs(i, ch)}</div>')
     for i, ch in enumerate(CHARS):
         body.append(photo(i, ch))
+        inner = (f'<div class="enb">{ch["en"]}</div>{name_html(ch)}{quote_html(ch)}'
+                 f'<div class="rule"></div>{tags_html(ch)}{desc_html(ch)}')
+        body.append(text_box(i, ch, inner, dy=-20))
+    return page(css, "".join(body))
+
+
+# ───────────────────────── B 흰 배경 버전 (W1 완전 하양 / W2 달만 / W3 달 + 바닥 그라데이션)
+def card_poly(i):
+    return poly([(0, line_y(i, 0)), (W, line_y(i, W)), (W, line_y(i + 1, W)), (0, line_y(i + 1, 0))])
+
+
+def floor_glow(i, h=280):
+    # 카드 아랫변을 따라 위로 옅어지는 띠
+    yl, yr = L[i + 1]
+    ang = math.degrees(math.atan2(yr - yl, W))
+    cy = (yl + yr) / 2
+    return (f'<div class="floor" style="left:-100px;top:{cy - h:.0f}px;width:{W + 200}px;height:{h}px;'
+            f'transform-origin:50% 100%;transform:rotate({ang:.2f}deg)"></div>')
+
+
+def draft_W(kind):
+    css = """
+.band{background:transparent}
+.moon{position:absolute;border-radius:50%;
+ background:radial-gradient(circle at 50% 38%,#ffffffb3 0%,#ffffff00 46%),linear-gradient(180deg,var(--deep) 0%,var(--band) 92%)}
+.ring{position:absolute;border-radius:50%;border:1.5px solid var(--acc);opacity:.3}
+.floor{position:absolute;background:linear-gradient(0deg,var(--band) 0%,#ffffff00 100%)}
+svg.lines{position:absolute;left:0;top:0;z-index:2}
+svg.lines line{stroke:#e2dce7;stroke-width:2}
+""" + B_TYPE_CSS
+    body = []
+    for i, ch in enumerate(CHARS):
+        inner = ""
+        if kind in ("moon", "floor"):
+            inner += moon_divs(i, ch)
+        if kind == "floor":
+            inner += floor_glow(i)
+        if inner:
+            body.append(f'<div class="band c{i}" style="clip-path:{card_poly(i)}">{inner}</div>')
+    ls = "".join(f'<line x1="0" y1="{yl}" x2="{W}" y2="{yr}"/>' for yl, yr in L)
+    body.append(f'<svg class="lines" width="{W}" height="{END}" viewBox="0 0 {W} {END}">{ls}</svg>')
+    for i, ch in enumerate(CHARS):
+        body.append(photo(i, ch, gap=False))
         inner = (f'<div class="enb">{ch["en"]}</div>{name_html(ch)}{quote_html(ch)}'
                  f'<div class="rule"></div>{tags_html(ch)}{desc_html(ch)}')
         body.append(text_box(i, ch, inner, dy=-20))
@@ -264,7 +313,8 @@ def draft_D():
 
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
-    for k, f in [("A", draft_A), ("B", draft_B), ("C", draft_C), ("D", draft_D)]:
+    for k, f in [("A", draft_A), ("B", draft_B), ("C", draft_C), ("D", draft_D),
+                 ("W1", lambda: draft_W("plain")), ("W2", lambda: draft_W("moon")), ("W3", lambda: draft_W("floor"))]:
         with open(os.path.join(here, "out", f"draft_{k}.html"), "w", encoding="utf-8") as fp:
             fp.write(f())
     print("END", END, "lines", L)
