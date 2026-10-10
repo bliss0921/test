@@ -11,8 +11,10 @@
 | W1 | B 흰 배경판: 배경 없음, 대각선 선만 |
 | W2 | B 흰 배경판: 색은 인물 뒤 달에만 |
 | W3 | B 흰 배경판: W2 + 대각선 아랫변 따라 옅은 색 |
+| W4 | B 흰 배경판: W1 + 바닥빛만 (달 없음) |
+| W5 | W4에서 바닥빛을 더 높고 진하게 |
 
-비교: `out/compare.png`(A~D), `out/compare_white.png`(B vs 흰 배경판) / 원본: `out/draft_*.png`
+비교: `out/compare.png`(A~D), `out/compare_white.png`(B vs 흰 배경판), `out/compare_floor.png`(바닥빛 비교) / 원본: `out/draft_*.png`
 
 ## 다시 뽑기
 ```sh

@@ -213,17 +213,18 @@ def draft_B():
     return page(css, "".join(body))
 
 
-# ───────────────────────── B 흰 배경 버전 (W1 완전 하양 / W2 달만 / W3 달 + 바닥 그라데이션)
+# ───────────────────────── B 흰 배경 버전
+# W1 완전 하양 / W2 달만 / W3 달 + 바닥빛 / W4 바닥빛만 / W5 바닥빛만(진하게)
 def card_poly(i):
     return poly([(0, line_y(i, 0)), (W, line_y(i, W)), (W, line_y(i + 1, W)), (0, line_y(i + 1, 0))])
 
 
-def floor_glow(i, h=280):
+def floor_glow(i, h=280, cls="floor"):
     # 카드 아랫변을 따라 위로 옅어지는 띠
     yl, yr = L[i + 1]
     ang = math.degrees(math.atan2(yr - yl, W))
     cy = (yl + yr) / 2
-    return (f'<div class="floor" style="left:-100px;top:{cy - h:.0f}px;width:{W + 200}px;height:{h}px;'
+    return (f'<div class="{cls}" style="left:-100px;top:{cy - h:.0f}px;width:{W + 200}px;height:{h}px;'
             f'transform-origin:50% 100%;transform:rotate({ang:.2f}deg)"></div>')
 
 
@@ -234,6 +235,7 @@ def draft_W(kind):
  background:radial-gradient(circle at 50% 38%,#ffffffb3 0%,#ffffff00 46%),linear-gradient(180deg,var(--deep) 0%,var(--band) 92%)}
 .ring{position:absolute;border-radius:50%;border:1.5px solid var(--acc);opacity:.3}
 .floor{position:absolute;background:linear-gradient(0deg,var(--band) 0%,#ffffff00 100%)}
+.floor2{position:absolute;background:linear-gradient(0deg,var(--band) 0%,var(--band) 20%,#ffffff00 100%)}
 svg.lines{position:absolute;left:0;top:0;z-index:2}
 svg.lines line{stroke:#e2dce7;stroke-width:2}
 """ + B_TYPE_CSS
@@ -242,8 +244,10 @@ svg.lines line{stroke:#e2dce7;stroke-width:2}
         inner = ""
         if kind in ("moon", "floor"):
             inner += moon_divs(i, ch)
-        if kind == "floor":
+        if kind in ("floor", "flooronly"):
             inner += floor_glow(i)
+        if kind == "floorstrong":
+            inner += floor_glow(i, h=440, cls="floor2")
         if inner:
             body.append(f'<div class="band c{i}" style="clip-path:{card_poly(i)}">{inner}</div>')
     ls = "".join(f'<line x1="0" y1="{yl}" x2="{W}" y2="{yr}"/>' for yl, yr in L)
@@ -314,7 +318,8 @@ def draft_D():
 if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     for k, f in [("A", draft_A), ("B", draft_B), ("C", draft_C), ("D", draft_D),
-                 ("W1", lambda: draft_W("plain")), ("W2", lambda: draft_W("moon")), ("W3", lambda: draft_W("floor"))]:
+                 ("W1", lambda: draft_W("plain")), ("W2", lambda: draft_W("moon")), ("W3", lambda: draft_W("floor")),
+                 ("W4", lambda: draft_W("flooronly")), ("W5", lambda: draft_W("floorstrong"))]:
         with open(os.path.join(here, "out", f"draft_{k}.html"), "w", encoding="utf-8") as fp:
             fp.write(f())
     print("END", END, "lines", L)
