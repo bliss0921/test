@@ -1,0 +1,40 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'Gowun Batang';src:url('../fonts/GowunBatang-Regular.ttf');font-weight:400}
+@font-face{font-family:'Gowun Batang';src:url('../fonts/GowunBatang-Bold.ttf');font-weight:700}
+@font-face{font-family:'Gowun Dodum';src:url('../fonts/GowunDodum-Regular.ttf');font-weight:400}
+@font-face{font-family:'Cormorant';src:url('../fonts/CormorantGaramond.ttf');font-weight:300 700}
+@font-face{font-family:'Cormorant';src:url('../fonts/CormorantGaramond-Italic.ttf');font-weight:300 700;font-style:italic}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{width:1000px;overflow:hidden}
+body{width:1000px;height:2500px;position:relative;overflow:hidden;background:#fff;color:#3a3340;
+ font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif;-webkit-font-smoothing:antialiased}
+.band{position:absolute;left:0;top:0;width:1000px;height:2500px;z-index:1;overflow:hidden}
+.ph{position:absolute;z-index:3}
+.ph img{display:block;height:auto}
+.info{position:absolute;z-index:4;transform:translateY(-50%)}
+.name{font-size:92px;font-weight:900;line-height:1;letter-spacing:-3px;display:flex;align-items:baseline;color:#3a3340}
+.name small{font-size:32px;font-weight:400;letter-spacing:0;margin-left:10px;color:#7a7180}
+.en{font-size:17px;font-weight:700;letter-spacing:.42em;color:var(--acc);display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.en::before{content:'';width:34px;height:2px;background:var(--acc);opacity:.7}
+.quote{position:relative;margin-top:22px;padding-top:50px;font-family:'Gowun Batang',serif;font-weight:700;
+ font-size:31px;line-height:1.55;letter-spacing:-.5px;color:#3a3340;word-break:keep-all}
+.quote::before{content:'\201C';position:absolute;left:-6px;top:-40px;font-family:'Cormorant',serif;font-weight:700;
+ font-size:170px;line-height:1;color:var(--acc);opacity:.6}
+.quote .qc{font-family:'Cormorant',serif;font-weight:700;font-size:104px;line-height:0;color:var(--acc);opacity:.6;
+ vertical-align:-48px;margin-left:6px}
+.rule{height:1px;background:#3a334022;margin:26px 0 22px}
+.tags{display:flex;gap:10px;flex-wrap:wrap}
+.tags span{font-size:20px;font-weight:700;padding:6px 15px;border-radius:7px;background:var(--chip);color:var(--chipt)}
+.desc{margin-top:20px;font-size:21px;line-height:1.72;color:#5b5361;word-break:keep-all}
+.desc .note{color:#9a92a0;font-size:19px}
+.c0{--band:#f7e4e8;--soft:#fbf1f3;--deep:#efc6d3;--acc:#d0607f;--chip:#f1d0da;--chipt:#a24f6a}
+.c1{--band:#ede8f5;--soft:#f5f2fa;--deep:#d6cbee;--acc:#8a6fcf;--chip:#ddd3f0;--chipt:#6a55a8}
+.c2{--band:#e2eaf3;--soft:#f0f4f9;--deep:#c3d5e9;--acc:#5a88c2;--chip:#cadbeb;--chipt:#3f6a9c}
+.love{display:flex;align-items:center;gap:12px;margin-top:24px;color:var(--acc)}
+.love .lbl{font-size:19px;font-weight:700;letter-spacing:.08em;color:var(--chipt);white-space:nowrap}
+.love .bar{flex:1;height:16px;border-radius:999px;background:#ffffffb3;border:1.5px solid var(--deep);overflow:hidden}
+.love .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--deep),var(--acc))}
+.love .val{font-weight:900;font-size:24px;line-height:1;color:var(--acc);min-width:62px;text-align:right}
+.love .val small{font-size:16px;font-weight:700}
+</style></head><body><div class="band c0" style="clip-path:polygon(0.0px 110.0px,1000.0px 210.0px,1000.0px 852.0px,0.0px 952.0px);background:var(--band)"></div><div class="band c1" style="clip-path:polygon(0.0px 968.0px,1000.0px 868.0px,1000.0px 1702.0px,0.0px 1602.0px);background:var(--band)"></div><div class="band c2" style="clip-path:polygon(0.0px 1618.0px,1000.0px 1718.0px,1000.0px 2360.0px,0.0px 2460.0px);background:var(--band)"></div><div class="ph" style="left:-20px;top:37px;width:540px;height:946px;clip-path:polygon(0.0px 0.0px,540.0px 0.0px,540.0px 862.7px,0.0px 916.7px);-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent 99%);mask-image:linear-gradient(90deg,#000 80%,transparent 99%);"><img src="../img/seohu.png" style="width:540px"></div><div class="info c0" style="left:550px;top:511px;width:400px"><div class="en">SEOHU</div><div class="name">서후<small>(23)</small></div><div class="quote">누나아, 나 봐봐요.<br>아니이, 옆에 말고 나아.<span class="qc">”</span></div><div class="love"><svg viewBox="0 0 24 22" width="22" height="20"><path d="M12 21s-8.5-5.3-10.6-10.2C-.2 6.9 2.2 2 6.6 2c2.4 0 4.2 1.3 5.4 3.1C13.2 3.3 15 2 17.4 2c4.4 0 6.8 4.9 5.2 8.8C20.5 15.7 12 21 12 21z" fill="currentColor"/></svg><span class="lbl">호감도</span><div class="bar"><i style="width:35%"></i></div><span class="val">35<small>%</small></span></div><div class="rule"></div><div class="tags"><span>#내숭</span><span>#돈만주면다함</span></div><div class="desc"><p>고졸 일진. 입 험함. 성격 나쁨.</p><p>대포폰으로 공사침.</p><p>야스할 때 손버릇 험함.</p><p class="note">(손님한텐 안 그럼)</p></div></div><div class="ph" style="left:480px;top:801px;width:540px;height:946px;clip-path:polygon(0.0px 0.0px,540.0px 0.0px,540.0px 903.3px,0.0px 849.3px);-webkit-mask-image:linear-gradient(270deg,#000 80%,transparent 99%);mask-image:linear-gradient(270deg,#000 80%,transparent 99%);"><img src="../img/rebel.png" style="width:540px"></div><div class="info c1" style="left:50px;top:1265px;width:400px"><div class="en">REBEL</div><div class="name">레블<small>(24)</small></div><div class="quote">누나, 내 바이크 뒤에 타면<br>울겠는데? 아니야?<br>그럼 타보든가!<span class="qc">”</span></div><div class="love"><svg viewBox="0 0 24 22" width="22" height="20"><path d="M12 21s-8.5-5.3-10.6-10.2C-.2 6.9 2.2 2 6.6 2c2.4 0 4.2 1.3 5.4 3.1C13.2 3.3 15 2 17.4 2c4.4 0 6.8 4.9 5.2 8.8C20.5 15.7 12 21 12 21z" fill="currentColor"/></svg><span class="lbl">호감도</span><div class="bar"><i style="width:70%"></i></div><span class="val">70<small>%</small></span></div><div class="rule"></div><div class="tags"><span>#도파민중독</span><span>#재미가우선</span></div><div class="desc"><p>휴학생. 스릴이 최고임.</p><p>야스할 때도 스릴 추구.</p><p>섹파 많음.</p></div></div><div class="ph" style="left:-20px;top:1545px;width:540px;height:946px;clip-path:polygon(0.0px 0.0px,540.0px 0.0px,540.0px 862.7px,0.0px 916.7px);-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent 99%);mask-image:linear-gradient(90deg,#000 80%,transparent 99%);"><img src="../img/juyoon.png" style="width:540px"></div><div class="info c2" style="left:550px;top:2019px;width:400px"><div class="en">JUYOON</div><div class="name">주윤<small>(27)</small></div><div class="quote">주윤입니다.<span class="qc">”</span></div><div class="love"><svg viewBox="0 0 24 22" width="22" height="20"><path d="M12 21s-8.5-5.3-10.6-10.2C-.2 6.9 2.2 2 6.6 2c2.4 0 4.2 1.3 5.4 3.1C13.2 3.3 15 2 17.4 2c4.4 0 6.8 4.9 5.2 8.8C20.5 15.7 12 21 12 21z" fill="currentColor"/></svg><span class="lbl">호감도</span><div class="bar"><i style="width:5%"></i></div><span class="val">5<small>%</small></span></div><div class="rule"></div><div class="tags"><span>#클로짓게이</span><span>#통제광</span></div><div class="desc"><p>다른 호빠 사장 아빠가 시켜서<br>배울 겸 일함.</p><p>게이인 것도 집안도 비밀.</p><p>야스할 때도 컨트롤프릭임.</p><p class="note">(남자 한정)</p></div></div></body></html>
