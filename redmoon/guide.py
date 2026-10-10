@@ -36,8 +36,8 @@ SEC_GAP = 0   # 제목 밑줄 아래 여백 (위 여백과 눈으로 같아 보�
 
 
 def li(text):
-    # "- " 줄글, 두 줄 넘어가면 대시 뒤로 들여쓰기
-    return d("margin-top:10px;padding-left:14px;text-indent:-14px;font-size:15px;line-height:1.85;", "- " + text)
+    # "- " 줄글 (내어쓰기 없음)
+    return d("margin-top:10px;font-size:15px;line-height:1.85;", "- " + text)
 
 
 def b(text):
@@ -70,8 +70,8 @@ def shots(local):
 def finale(local):
     # 명함 이미지: 링크는 편집기에서 사진에 직접 건다
     return d("margin-top:56px;text-align:center;",
-             d("font-size:14px;font-weight:700;letter-spacing:1px;", "아래 눌러서 호빠 놀러가기")
-             + d("display:inline-block;width:360px;max-width:100%;margin-top:14px;", img("card", local)))
+             d(f"font-size:21px;font-weight:900;letter-spacing:1px;color:{INK};", "아래 눌러서 호빠 놀러가기")
+             + d("display:inline-block;width:360px;max-width:100%;margin-top:16px;", img("card", local)))
 
 
 def build(local=False):
