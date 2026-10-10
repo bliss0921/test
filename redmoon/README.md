@@ -1,5 +1,8 @@
 # RED MOON 인물소개 시안
 
+**완성본: `out/redmoon_full.png`** (건물 → 초이스 → 인물소개 W4 → 누구를 → 봇 이용 안내서)
+봇 소개 별지 서식만: `out/form.png` (내용은 `longpost.py`의 `SECTIONS`)
+
 폭 1000px 세로 이미지. 위/아래(타이틀, "누구를 고르시겠습니까?")는 빠진 인물소개 영역만.
 
 | 시안 | 내용 |
@@ -22,5 +25,7 @@
 python3 gen.py            # out/draft_*.html 생성
 python3 render.py out/draft_B.html out/draft_B.png   # Playwright(Chromium) 스크린샷
 python3 sheet.py && python3 render.py out/compare.html out/compare.png   # 비교표
+python3 render.py out/draft_W4.html out/draft_W4.png && python3 longpost.py \
+  && python3 render.py out/form.html out/form.png out/redmoon_full.html out/redmoon_full.png   # 완성본
 ```
 글 내용·색은 `gen.py`의 `CHARS`, 카드 높이·대각선 기울기는 `BIG`, `SLOPE`에서 바꾸면 됨.
