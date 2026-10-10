@@ -1,0 +1,21 @@
+{
+  "type": "regex",
+  "data": [
+    {
+      "comment": "20_v2_퍼메_선택기UI",
+      "in": "⟦RM_FM⟧",
+      "out": "{{#when::{{lastmessageid}}::is::-1}}{{#when::{{getvar::cv_rm_fm_menu}}::is::0}}<div class=\"rm-fm rm-fm-compact\" role=\"region\" aria-label=\"선택한 첫 메시지\"><div class=\"rm-fm-selected\"><span class=\"rm-fm-title\">{{#when::{{getvar::cv_rm_fm_choice}}::is::ko}}반하나와 레드문에 첫방문한 {{user}}{{:else}}{{#when::{{getvar::cv_rm_fm_choice}}::is::en}}{{user}}'s first visit to Red Moon with Ban Hana{{:else}}자유설정{{/when}}{{/when}}</span><button type=\"button\" class=\"rm-fm-reopen\" risu-btn=\"rm-fm-reopen\">다시 선택</button></div></div>{{:else}}<div class=\"rm-fm\" role=\"region\" aria-label=\"첫 메시지 선택\"><div class=\"rm-fm-options\"><button type=\"button\" class=\"rm-fm-choice\" risu-btn=\"rm-fm-ko\">반하나와 레드문에 첫방문한 {{user}}</button><button type=\"button\" class=\"rm-fm-choice rm-fm-choice-en\" risu-btn=\"rm-fm-en\">{{user}}'s first visit to Red Moon with Ban Hana</button><button type=\"button\" class=\"rm-fm-choice\" risu-btn=\"rm-fm-free\">자유설정</button></div></div>{{/when}}{{/when}}",
+      "type": "editdisplay",
+      "ableFlag": true,
+      "flag": "g"
+    },
+    {
+      "comment": "20_v2_퍼메_리퀘스트마커제거",
+      "in": "⟦RM_FM⟧",
+      "out": "",
+      "type": "editprocess",
+      "ableFlag": true,
+      "flag": "g"
+    }
+  ]
+}

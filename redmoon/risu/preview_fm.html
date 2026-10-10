@@ -1,0 +1,521 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+/* REDMOON_STATUS_MOBILE_V5 */
+.redmoon-status {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 6px;
+  background: #22242a !important;
+  color: #e5e7eb !important;
+  -webkit-text-fill-color: #e5e7eb !important;
+  font-family: inherit;
+  font-size: .8em;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.redmoon-status .rm-head,
+.redmoon-status .rm-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 14px;
+  min-width: 0;
+}
+.redmoon-status .rm-body {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+.redmoon-status .rm-icon {
+  flex: 0 0 auto;
+}
+.redmoon-status .rm-time,
+.redmoon-status .rm-location {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* 전역테마보다 구체적인 선택자로 실제 글자 요소의 색을 지정합니다. */
+.redmoon-status .rm-head .rm-icon,
+.redmoon-status .rm-head .rm-time {
+  color: #e5e7eb !important;
+  -webkit-text-fill-color: #e5e7eb !important;
+}
+.redmoon-status .rm-head .rm-location,
+.redmoon-status .rm-body .rm-money .rm-label,
+.redmoon-status .rm-body .rm-room .rm-label {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+}
+.redmoon-status,
+.redmoon-status .rm-head *,
+.redmoon-status .rm-body * {
+  text-shadow: none !important;
+}
+.redmoon-status .rm-money,
+.redmoon-status .rm-room {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+}
+.redmoon-status .rm-body .rm-money .rm-value {
+  color: #e5e7eb !important;
+  -webkit-text-fill-color: #e5e7eb !important;
+  font-weight: 600;
+}
+.redmoon-status .rm-room {
+  margin-left: auto;
+}
+.redmoon-status .rm-body .rm-room .rm-timer {
+  color: #c8a56a !important;
+  -webkit-text-fill-color: #c8a56a !important;
+  font-weight: 500;
+}
+/* 모바일은 자동 줄바꿈 대신 행과 열을 정해 아이콘이 홀로 남지 않게 합니다. */
+@media (max-width: 640px) {
+  .redmoon-status {
+    padding: 10px 12px;
+  }
+  .redmoon-status .rm-head,
+  .redmoon-status .rm-body {
+    display: grid !important;
+    min-width: 0;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+  }
+  .redmoon-status .rm-head {
+    grid-template-columns: 1.25em minmax(0, 1fr);
+    column-gap: 6px;
+    row-gap: 4px;
+    align-items: start;
+  }
+  .redmoon-status .rm-head span,
+  .redmoon-status .rm-body span {
+    min-width: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+  .redmoon-status .rm-head .rm-icon {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+  }
+  .redmoon-status .rm-head .rm-time {
+    grid-column: 2;
+    grid-row: 1;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .redmoon-status .rm-head .rm-location {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 12px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  .redmoon-status .rm-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    margin-top: 8px;
+    padding-top: 8px;
+    align-items: stretch;
+  }
+  .redmoon-status .rm-body .rm-money,
+  .redmoon-status .rm-body .rm-room {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    width: 100%;
+    gap: 12px;
+    align-items: baseline;
+    white-space: normal !important;
+  }
+  .redmoon-status .rm-body .rm-label {
+    justify-self: start;
+    text-align: left !important;
+  }
+  .redmoon-status .rm-body .rm-money .rm-value,
+  .redmoon-status .rm-body .rm-room .rm-timer {
+    justify-self: end;
+    max-width: 100%;
+    text-align: right !important;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* 은어사전: 선수 / 초이스 / 손님·영업 / 돈·시간 */
+.rm-dict-panel,
+.rm-dict-panel *,
+.rm-dict-toggle,
+.rm-dict-toggle * {
+  box-sizing: border-box;
+}
+.rm-dict-panel,
+.rm-dict-toggle {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.7;
+  letter-spacing: normal;
+  text-align: left;
+  text-shadow: none;
+  color: #e5e7eb;
+}
+.rm-dict-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, calc(100vw - 40px));
+  height: 100vh;
+  height: 100dvh;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #22242a;
+  border: 0;
+  border-left: 1px solid #383a42;
+  border-radius: 0;
+  box-shadow: none;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.rm-dict-panel button,
+.rm-dict-toggle button {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  letter-spacing: normal !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  text-shadow: none !important;
+  color: inherit !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.rm-dict-panel button:focus-visible,
+.rm-dict-toggle button:focus-visible {
+  outline: 2px solid #b8bdc8;
+  outline-offset: -3px;
+}
+.rm-dict-panel .rm-dict-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 16px 24px 8px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+}
+.rm-dict-panel .rm-dict-title {
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-family: inherit !important;
+  font-size: 20px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  letter-spacing: normal !important;
+  color: #f3f4f6 !important;
+  background: transparent !important;
+}
+.rm-dict-panel .rm-dict-close {
+  width: 44px;
+  height: 44px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 4px;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  color: #c2c6cf !important;
+}
+.rm-dict-panel .rm-dict-close:hover {
+  color: #ffffff !important;
+  background: #2c2f36 !important;
+}
+.rm-dict-panel .rm-dict-tabs {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 12px;
+  min-width: 0;
+  margin: 0 24px;
+  margin-right: max(24px, env(safe-area-inset-right, 0px));
+  padding: 0;
+  border-bottom: 1px solid #383a42;
+}
+.rm-dict-panel .rm-dict-tab {
+  min-width: 0;
+  min-height: 46px;
+  margin: 0;
+  padding: 10px 0 !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #9ca3af !important;
+  white-space: nowrap;
+}
+.rm-dict-panel .rm-dict-tab:hover {
+  color: #e5e7eb !important;
+}
+/* 상태 클래스는 별도 선택자로 써서 Risu의 클래스 접두사 처리에 대응합니다. */
+.rm-dict-panel .rm-dict-tab-active {
+  border-bottom-color: #e5e7eb !important;
+  font-weight: 600 !important;
+  color: #f3f4f6 !important;
+}
+.rm-dict-panel .rm-dict-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 24px 24px 28px;
+  padding-right: max(24px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #50545e transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.rm-dict-panel .rm-dict-page,
+.rm-dict-panel .rm-dict-entry {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+.rm-dict-panel .rm-dict-entry + .rm-dict-entry {
+  margin-top: 26px;
+}
+.rm-dict-panel .rm-dict-term {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  letter-spacing: normal !important;
+  color: #f3f4f6 !important;
+  background: transparent !important;
+}
+.rm-dict-panel .rm-dict-definition,
+.rm-dict-panel .rm-dict-note {
+  display: block;
+  margin: 6px 0 0 !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 1.75 !important;
+  letter-spacing: normal !important;
+  text-align: left !important;
+  text-indent: 0 !important;
+  color: #e5e7eb !important;
+  background: transparent !important;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.rm-dict-panel .rm-dict-note {
+  font-size: 13px !important;
+  color: #a4a9b3 !important;
+}
+.rm-dict-toggle {
+  position: fixed;
+  top: 112px;
+  top: calc(112px + env(safe-area-inset-top, 0px));
+  right: 16px;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 9;
+  width: 56px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+}
+.rm-dict-toggle .rm-dict-open {
+  width: 100%;
+  height: 100%;
+  padding: 0 !important;
+  border: 1px solid #454954 !important;
+  border-radius: 4px !important;
+  color: #e5e7eb !important;
+  background: #22242a !important;
+}
+.rm-dict-toggle .rm-dict-open:hover {
+  background: #2c2f36 !important;
+}
+/* PC: 오른쪽 위 사용량·크레딧 표시 아래에 사전 버튼을 배치합니다. */
+@media (min-width: 769px) {
+  .rm-dict-toggle {
+    top: 220px;
+    top: calc(220px + env(safe-area-inset-top, 0px));
+  }
+}
+@media (max-width: 480px) {
+  .rm-dict-panel {
+    width: calc(100vw - 24px);
+  }
+  .rm-dict-panel .rm-dict-header {
+    padding: 12px 16px 6px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .rm-dict-panel .rm-dict-title {
+    font-size: 18px !important;
+  }
+  .rm-dict-panel .rm-dict-tabs {
+    gap: 8px;
+    margin-right: max(16px, env(safe-area-inset-right, 0px));
+    margin-left: 16px;
+  }
+  .rm-dict-panel .rm-dict-scroll {
+    padding: 20px 16px 24px;
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  .rm-dict-toggle {
+    top: 96px;
+    top: calc(96px + env(safe-area-inset-top, 0px));
+    right: 10px;
+    right: max(10px, env(safe-area-inset-right, 0px));
+  }
+}
+
+/* REDMOON_FIRST_MESSAGE_V2 — 선택기 전용 */
+.rm-fm, .rm-fm * { box-sizing: border-box; }
+.rm-fm {
+  width: 100%;
+  max-width: 520px;
+  min-width: 0;
+  margin: 14px auto 26px;
+  padding: 12px 18px;
+  border: 1px solid rgba(200,165,106,.55);
+  border-radius: 2px;
+  background: #0d0c0e !important;
+  box-shadow: inset 0 0 0 5px #0d0c0e, inset 0 0 0 6px rgba(200,165,106,.24);
+  color: #ece4d7 !important;
+  font-family: "Noto Serif KR", "Noto Serif CJK KR", "Nanum Myeongjo", "AppleMyungjo", "Batang", serif;
+  text-align: center;
+  line-height: 1.6;
+}
+.rm-fm * { text-shadow: none !important; }
+.rm-fm .rm-fm-choice {
+  all: unset;
+  box-sizing: border-box;
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 22px 8px !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(200,165,106,.18) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #ece4d7 !important;
+  -webkit-text-fill-color: #ece4d7 !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.55 !important;
+  letter-spacing: .3px !important;
+  text-align: center !important;
+  white-space: normal !important;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color .2s ease, background-color .2s ease;
+}
+.rm-fm .rm-fm-choice:first-child { border-top: 0 !important; }
+.rm-fm .rm-fm-choice:hover {
+  background: rgba(200,165,106,.06) !important;
+  color: #dcbc7c !important;
+  -webkit-text-fill-color: #dcbc7c !important;
+}
+.rm-fm .rm-fm-choice:focus-visible,
+.rm-fm .rm-fm-reopen:focus-visible {
+  outline: 1px solid #c8a56a !important;
+  outline-offset: -4px;
+}
+.rm-fm-compact { padding: 14px 18px; }
+.rm-fm .rm-fm-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+}
+.rm-fm .rm-fm-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #ece4d7 !important;
+  -webkit-text-fill-color: #ece4d7 !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  line-height: 1.5 !important;
+  text-align: left;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.rm-fm .rm-fm-reopen {
+  all: unset;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  padding: 6px 12px !important;
+  border: 1px solid rgba(200,165,106,.5) !important;
+  border-radius: 2px !important;
+  background: transparent !important;
+  color: #dcbc7c !important;
+  -webkit-text-fill-color: #dcbc7c !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  letter-spacing: 1px !important;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+.rm-fm .rm-fm-reopen:hover { background: rgba(200,165,106,.1) !important; }
+@media (max-width: 480px) {
+  .rm-fm { padding: 10px 12px; }
+  .rm-fm .rm-fm-choice { padding: 19px 4px !important; font-size: 15px !important; }
+  .rm-fm-compact { padding: 12px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rm-fm .rm-fm-choice, .rm-fm .rm-fm-reopen { transition: none; }
+}
+
+.lbl{color:#777;font:12px sans-serif;margin:24px auto 0;max-width:520px}</style>
+</head><body style="margin:0;padding:20px 16px 30px;background:#1c1d21"><div class="lbl">선택 전</div><div class="rm-fm" role="region" aria-label="첫 메시지 선택"><div class="rm-fm-options"><button type="button" class="rm-fm-choice" risu-btn="rm-fm-ko">반하나와 레드문에 첫방문한 Kang Chan</button><button type="button" class="rm-fm-choice rm-fm-choice-en" risu-btn="rm-fm-en">Kang Chan's first visit to Red Moon with Ban Hana</button><button type="button" class="rm-fm-choice" risu-btn="rm-fm-free">자유설정</button></div></div><div class="lbl">선택 후 (한국어)</div><div class="rm-fm rm-fm-compact" role="region" aria-label="선택한 첫 메시지"><div class="rm-fm-selected"><span class="rm-fm-title">반하나와 레드문에 첫방문한 Kang Chan</span><button type="button" class="rm-fm-reopen" risu-btn="rm-fm-reopen">다시 선택</button></div></div><div class="lbl">선택 후 (영문)</div><div class="rm-fm rm-fm-compact" role="region" aria-label="선택한 첫 메시지"><div class="rm-fm-selected"><span class="rm-fm-title">Kang Chan's first visit to Red Moon with Ban Hana</span><button type="button" class="rm-fm-reopen" risu-btn="rm-fm-reopen">다시 선택</button></div></div></body></html>
