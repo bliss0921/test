@@ -45,18 +45,36 @@ def b(text):
 
 
 # 사진 칸: 붙여넣기용은 자리 표시 글자만 두고, 편집기에서 그 글자를 지우고 사진을 넣는다
-SHOTS = [("ui_toggle.png", "▶ 여기에 토글 사진"), ("ui_slang.png", "▶ 여기에 은어사전 사진")]
+# 아카에 올린 사진 주소 (편집기에서 받은 그대로) / 미리보기용 로컬 파일
+ARCA = "//ac.arca.live/20261010sac/"
+IMG = {
+    "toggle": (ARCA + "5a8b417e7bd5250a31a603ed4ac42b83eebc892ac07522cfcd276f327578eee2.png?expires=1791614527&key=wXMxgHH36EakmoV1i8VSSQ",
+               "../img/ui_toggle.png"),
+    "slang": (ARCA + "1fb06ddc1ea9aa3f6cff4fc7b49b1ee14696847e4fba4cea20a64f4e48772acf.png?expires=1791614507&key=fLox_IsQ-dF2omT-AoySzA",
+              "../img/ui_slang.png"),
+    "card": (ARCA + "d4917dde027488050bc76626992b863c94de898f70b0e8ca2e9c6ec13d034eb1.png?expires=1791614770&key=9OoEUcuAJLUJRe9TDwhwBA",
+             "../img/card_redmoon.webp"),
+}
 
 
-def shots(with_images):
-    cells = ""
-    for img, label in SHOTS:
-        inner = f'<img src="../img/{img}" style="width:100%;height:auto;">' if with_images else label
-        cells += d("display:inline-block;width:320px;max-width:100%;margin:6px;vertical-align:top;", inner)
+def img(key, local):
+    return f'<img src="{IMG[key][1 if local else 0]}" class="fr-fic fr-dii" style="width:100%;">'
+
+
+def shots(local):
+    cells = "".join(d("display:inline-block;width:320px;max-width:100%;margin:6px;vertical-align:top;", img(k, local))
+                    for k in ("toggle", "slang"))
     return d("margin-top:18px;text-align:center;", cells)
 
 
-def build(with_images=False):
+def finale(local):
+    # 명함 이미지: 링크는 편집기에서 사진에 직접 건다
+    return d("margin-top:56px;text-align:center;",
+             d("font-size:14px;font-weight:700;letter-spacing:1px;", "아래 눌러서 호빠 놀러가기")
+             + d("display:inline-block;width:360px;max-width:100%;margin-top:14px;", img("card", local)))
+
+
+def build(local=False):
     hero = d(f"background:{BAND};",
              d("padding:50px 22px 38px;text-align:center;"
                "background:linear-gradient(180deg,#ffffff 0%,rgba(255,255,255,0.94) 42%,rgba(255,255,255,0) 100%);",
@@ -73,7 +91,7 @@ def build(with_images=False):
         li("기능은 별거 없음. 상태창과 일기, NPC 쪼개놓은 토글, 사이드바 은어사전 있음. 알아서 토글로 토큰 조절할 것."),
         li("/일기, /diary, /Diary 뒤에 인물 이름 입력하면 (ex. /일기 서후 오늘 일) 인물의 일기를 볼 수 있음. "
            "뒤에 주제를 붙여도 되고 안 붙여도 됨. 근데 무조건 문장 시작에 적어야 함."),
-        shots(with_images),
+        shots(local),
     ])
 
     test = section("테스트 환경", [
@@ -81,7 +99,7 @@ def build(with_images=False):
            "오푸스는 나도 한출하다 너무 비싸서 영출했음. 장기 넘어가면 대사에 한국어 섞이는 찐빠는 좀 있음. "
            "잼은 걍 한출하셈."),
         li("번역은 누더기프롬 재작성-웹소설작가 하니 대사 느낌 괜찮았음."),
-        li("테스트는 오육솔(천해), 오오오푸스(attg, 천해), 잼삼칠(누렁이)"),
+        li(f"테스트는 {b('오육솔(천해), 오오오푸스(attg, 천해), 잼삼칠(누렁이)')}"),
     ])
 
     play = section("플레이 가이드", [
@@ -98,10 +116,10 @@ def build(with_images=False):
     notes = section("일러두기", [
         li(f"은어나 지침은 {b('항상 활성화')} 권장, NPC 리스트도 {b('상시 활성화')} 권장."),
         li("은어가 실제로 맞는지, 실제 호빠가 이렇게 돌아가는진 나도 모름. 짚한테 조사시켜서 작성함."),
-        li("메인캐 간략버전은 누구 한 명 잡고 공략하는데 캐랑 다른 애들 티키타카하는 거 보고 싶을 때용임. "
+        li(f"메인캐 {b('간략버전')}은 누구 한 명 잡고 공략하는데 캐랑 다른 애들 티키타카하는 거 보고 싶을 때용임. "
            "(ex. 서후가 페소방 들어갔다 나오면 레블이 “거기 좋음? 쓰리섬 고?” 대사 치고 서후가 “꺼져 씨발.” 하는 이런 반응 보는 거임) "
            "성격이랑 간략한 스펙 정도만 들어간 거라 이 상태로 섹각이나 순애각 잡는 건 비추."),
-        li("애들 본명 로어북에 적혀 있음. 지침상 일할 때는 본명 비밀인데 잼민이 오지게 못 지킴. "
+        li(f"애들 본명 로어북에 적혀 있음. 지침상 일할 때는 본명 비밀인데 {b('잼민이 오지게 못 지킴.')} "
            "그거 잡겠다고 토큰 낭비하기 싫어서 난 걍 흐린 눈 함. 서후 본명 개싫어함."),
     ])
 
@@ -110,7 +128,7 @@ def build(with_images=False):
 
     html = d(f"max-width:860px;margin:0 auto;background:linear-gradient(180deg,#ffffff,#ffffff);border:1px solid {LINE};"
              f"color:{TEXT};font-family:{SANS};",
-             hero + d("padding:0 26px 44px;", info + test + play + notes) + floor)
+             hero + d("padding:0 26px 48px;", info + test + play + notes + finale(local)) + floor)
     return dark_guard(html)
 
 
@@ -140,8 +158,9 @@ def lint(html):
             errs.append(f"solid light bg: {st[:60]}")
     for m in re.finditer(BLOCKED_TAGS, html):
         errs.append(f"blocked tag: {m.group(0)}")
+    plain = html.replace(' class="fr-fic fr-dii"', "")
     for bad in ["<!--", "{", "}", " class=", "::"]:
-        if bad in html:
+        if bad in plain:
             errs.append(f"found {bad!r}")
     if re.search(r"<(div|span)[^>]*></\1>", html):
         errs.append("empty div/span")
@@ -173,7 +192,8 @@ document.title='stripped '+n;
 def preview(frag, dark=False, width=1000):
     bg, fg = ("#222", "#ccc") if dark else ("#fff", "#333")
     js = f"<script>{DARK_JS}</script>" if dark else ""
-    return (f'<!doctype html><html lang="ko"><head><meta charset="utf-8"></head>'
+    return (f'<!doctype html><html lang="ko"><head><meta charset="utf-8">'
+            '<style>.article-content img{max-width:100%;height:auto}.fr-dii{display:inline-block;vertical-align:bottom}</style></head>'
             f'<body style="margin:0;width:{width}px;background:{bg};color:{fg}">'
             f'<div class="article-content" style="padding:20px 0">{frag}</div>{js}</body></html>')
 
@@ -182,7 +202,7 @@ if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     out = lambda n: os.path.join(here, "out", n)
     frag = build()
-    shown = build(with_images=True)
+    shown = build(local=True)
     errs = lint(frag)
     print("lint:", "OK" if not errs else "\n  " + "\n  ".join(errs))
     open(out("guide.html"), "w", encoding="utf-8").write(frag)
