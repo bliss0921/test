@@ -27,9 +27,12 @@ def deco(style):
 
 
 def section(title, items):
-    head = d(f"margin-top:44px;padding-bottom:10px;border-bottom:1px solid {LINE};"
+    head = d(f"margin-top:44px;padding-bottom:13px;border-bottom:1px solid {LINE};line-height:1.3;"
              f"font-family:{SERIF};font-size:22px;font-weight:900;color:{INK};letter-spacing:1px;", title)
-    return head + d("padding-top:6px;", "".join(items))
+    return head + d(f"padding-top:{SEC_GAP}px;", "".join(items))
+
+
+SEC_GAP = 0   # 제목 밑줄 아래 여백 (위 여백과 눈으로 같아 보이게 맞춘 값)
 
 
 def li(text):
@@ -41,7 +44,19 @@ def b(text):
     return f'<strong style="color:{INK};">{text}</strong>'
 
 
-def build():
+# 사진 칸: 붙여넣기용은 자리 표시 글자만 두고, 편집기에서 그 글자를 지우고 사진을 넣는다
+SHOTS = [("ui_toggle.png", "▶ 여기에 토글 사진"), ("ui_slang.png", "▶ 여기에 은어사전 사진")]
+
+
+def shots(with_images):
+    cells = ""
+    for img, label in SHOTS:
+        inner = f'<img src="../img/{img}" style="width:100%;height:auto;">' if with_images else label
+        cells += d("display:inline-block;width:320px;max-width:100%;margin:6px;vertical-align:top;", inner)
+    return d("margin-top:18px;text-align:center;", cells)
+
+
+def build(with_images=False):
     hero = d(f"background:{BAND};",
              d("padding:50px 22px 38px;text-align:center;"
                "background:linear-gradient(180deg,#ffffff 0%,rgba(255,255,255,0.94) 42%,rgba(255,255,255,0) 100%);",
@@ -51,15 +66,20 @@ def build():
                + deco(f"width:120px;height:3px;margin:20px auto 0;border-radius:3px;background:{BAR}")))
 
     info = section("봇 정보", [
-        li("메인 NPC 3명, 서브 NPC n명 있는 호빠봇임."),
+        li("메인 NPC 3명, 서브 NPC 11명 있는 호빠봇임."),
         li("거의 쿰봇임. 쿰질만 오지게 해서 캐해 테스트는 많이 안 함. 야스는 맛있었음."),
-        li("기능은 별거 없음. 상태창과 일기, NPC 쪼개놓은 토글, 사이드바 은어사전 있음."),
+        li("퍼메는 유저가 친구 반하나랑 처음으로 레드문에 방문하는 1개만 있음. "
+           "영어/한국어 각각 있는데 영어는 일부러 한국 느낌 유지하려고 hyung, oppa 이런 식으로 썼음."),
+        li("기능은 별거 없음. 상태창과 일기, NPC 쪼개놓은 토글, 사이드바 은어사전 있음. 알아서 토글로 토큰 조절할 것."),
+        li("/일기, /diary, /Diary 뒤에 인물 이름 입력하면 (ex. /일기 서후 오늘 일) 인물의 일기를 볼 수 있음. "
+           "뒤에 주제를 붙여도 되고 안 붙여도 됨. 근데 무조건 문장 시작에 적어야 함."),
+        shots(with_images),
     ])
 
     test = section("테스트 환경", [
-        li(f"디스크립션에 한국어 섞여 있어서 {b('한출 권장')}하는데 영출도 꽤 괜찮음. "
+        li(f"디스크립션에 한글 섞여 있어서 {b('한출 권장')}하는데 영출도 꽤 괜찮음. "
            "오푸스는 나도 한출하다 너무 비싸서 영출했음. 장기 넘어가면 대사에 한국어 섞이는 찐빠는 좀 있음. "
-           f"{b('잼은 걍 한출하셈.')}"),
+           "잼은 걍 한출하셈."),
         li("번역은 누더기프롬 재작성-웹소설작가 하니 대사 느낌 괜찮았음."),
         li("테스트는 오육솔(천해), 오오오푸스(attg, 천해), 잼삼칠(누렁이)"),
     ])
@@ -72,7 +92,7 @@ def build():
            "주윤이는 호빠 말고 게이바 스타트하는 게 빠름. "
            "모두의 공용 암캐가 되고 싶다면 호빠 선수들 스트레스 해소용 성처리 당번이 되어봅시다. "
            "돈 받고 일한다 하면 오푸스 검열도 안 하고 페티시 개잘 말아줌."),
-        li("주윤이는 게이플만 해서 헤테로로 어떻게 나올진 잘 모르겠음."),
+        li("주윤이랑은 게이플만 해서 헤테로로 어떻게 나올진 잘 모르겠음."),
     ])
 
     notes = section("일러두기", [
@@ -82,7 +102,7 @@ def build():
            "(ex. 서후가 페소방 들어갔다 나오면 레블이 “거기 좋음? 쓰리섬 고?” 대사 치고 서후가 “꺼져 씨발.” 하는 이런 반응 보는 거임) "
            "성격이랑 간략한 스펙 정도만 들어간 거라 이 상태로 섹각이나 순애각 잡는 건 비추."),
         li("애들 본명 로어북에 적혀 있음. 지침상 일할 때는 본명 비밀인데 잼민이 오지게 못 지킴. "
-           f"그거 잡겠다고 토큰 낭비하기 싫어서 난 걍 흐린 눈 함. {b('서후 본명 개싫어함.')}"),
+           "그거 잡겠다고 토큰 낭비하기 싫어서 난 걍 흐린 눈 함. 서후 본명 개싫어함."),
     ])
 
     floor = d(f"background:{BAND};",
@@ -162,9 +182,10 @@ if __name__ == "__main__":
     here = os.path.dirname(os.path.abspath(__file__))
     out = lambda n: os.path.join(here, "out", n)
     frag = build()
+    shown = build(with_images=True)
     errs = lint(frag)
     print("lint:", "OK" if not errs else "\n  " + "\n  ".join(errs))
     open(out("guide.html"), "w", encoding="utf-8").write(frag)
-    open(out("guide_preview.html"), "w", encoding="utf-8").write(preview(frag))
-    open(out("guide_preview_dark.html"), "w", encoding="utf-8").write(preview(frag, dark=True))
-    open(out("guide_preview_mobile.html"), "w", encoding="utf-8").write(preview(frag, width=360))
+    open(out("guide_preview.html"), "w", encoding="utf-8").write(preview(shown))
+    open(out("guide_preview_dark.html"), "w", encoding="utf-8").write(preview(shown, dark=True))
+    open(out("guide_preview_mobile.html"), "w", encoding="utf-8").write(preview(shown, width=360))
