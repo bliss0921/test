@@ -1,7 +1,8 @@
 # RED MOON 인물소개 시안
 
-**완성본: `out/redmoon_full.png`** (건물 → 초이스 → 인물소개 W4 → 누구를 → 봇 이용 안내서)
-봇 소개 별지 서식만: `out/form.png` (내용은 `longpost.py`의 `SECTIONS`)
+**완성본 이미지: `out/redmoon_full.png`** (건물 → 초이스 → 인물소개 W4 → 누구를 고르시겠습니까)
+**봇 소개 HTML: `out/guide.html`** — 아카라이브 편집기 HTML 모드에 그대로 붙여넣기 (아카 HTML 가이드 v6.7.1 규칙: 인라인 스타일만, flex/position 등 미사용, 다크모드 색 가드 포함)
+미리보기: `out/guide_preview.png`(PC), `guide_preview_dark.png`(다크 테마 흉내), `guide_preview_mobile.png`(360px). 문구는 `guide.py`에서 수정.
 
 폭 1000px 세로 이미지. 위/아래(타이틀, "누구를 고르시겠습니까?")는 빠진 인물소개 영역만.
 
@@ -26,6 +27,7 @@ python3 gen.py            # out/draft_*.html 생성
 python3 render.py out/draft_B.html out/draft_B.png   # Playwright(Chromium) 스크린샷
 python3 sheet.py && python3 render.py out/compare.html out/compare.png   # 비교표
 python3 render.py out/draft_W4.html out/draft_W4.png && python3 longpost.py \
-  && python3 render.py out/form.html out/form.png out/redmoon_full.html out/redmoon_full.png   # 완성본
+  && python3 render.py out/redmoon_full.html out/redmoon_full.png   # 완성본 이미지
+python3 guide.py          # out/guide.html (+ lint 결과 출력, 미리보기 html)
 ```
 글 내용·색은 `gen.py`의 `CHARS`, 카드 높이·대각선 기울기는 `BIG`, `SLOPE`에서 바꾸면 됨.
