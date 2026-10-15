@@ -19,9 +19,10 @@ local UPCOMING_COUNT = 3
 -- knows: 비밀 이벤트를 아는 인물. 없으면 공개 행사
 -- needs: 이 중 하나라도 막히면 같이 막힌다 / any: 전부 막혀야 막힌다
 -- side: 반역에 가담하는 세력 (D-Day 문구에 남은 세력만 나열된다)
+-- after: D-Day가 지난 뒤에만 모델에게 보여 주는 이벤트 (날짜 없음, 화면 UPCOMING에도 안 나온다)
 local EVENTS = {
     { id = "E0", ongoing = true, title = "다프네야의 은밀한 준비", knows = "Daphneya",
-      plot = "Daphneya secretly researches dark magic and gathers information inside and outside the palace through familiars, quietly preparing to bring Karenya down. Outwardly Daphneya stays idle and frivolous." },
+      plot = "Daphneya is quietly preparing to bring Karenya down, gathering information inside and outside the palace through familiars. Outwardly Daphneya stays idle and frivolous, and nothing has surfaced yet." },
     { id = "E1", day = 82, date = "7.01", title = "하계 하지 축연",
       plot = "Summer Solstice Festival. All four of Karenya's partners gather at the palace for the banquet." },
     { id = "E2", day = 75, date = "7.08", title = "다프네야 → 루스란 접촉", knows = "Daphneya, Ruslan", needs = {"E0"},
@@ -54,6 +55,8 @@ local EVENTS = {
       plot = "Ruslan completes the key that can unlock the mana-suppressing choker." },
     { id = "E14", day = 0, date = "9.21", title = "반역", any = {"E4", "E7", "E9", "E12"},
       plot = "A coordinated rebellion breaks out against Karenya, meant to raise Daphneya as the next Emperor. In the novel, Myusa heard of it, fell into extreme terror, and made a contract with the Spirit of Fear; whether that happens depends on Myusa's state now." },
+    { id = "E15", after = true, title = "원작의 결말", needs = {"E14"},
+      plot = "The novel's course once the rebellion succeeds: the Order excommunicated Karenya, Hedwig won over most of the Imperial Knights, killed Karenya, then died by suicide, and Daphneya was raised as the next Emperor. Ruslan arrived with the finished key only to find Hedwig and Karenya already dead. Afterward, Daphneya remarries Piache and offers Piache as a dark-magic sacrifice (announced as illness), and Piache dies. Once the Mage Kingdom regains independence, Ruslan refuses the throne and seals away the rest of life in the Mage Tower; the throne passes to Runian. Myusa is fully consumed by the spirit and disappears. This is only the default course: anything the story has already changed stands." },
 }
 
 -- 9월 21일(D-0)이 1년 중 몇 번째 날인지
@@ -123,11 +126,12 @@ local function blockedUpTo(id, lastIndex, history)
 end
 
 local function isPast(e, left)
+    if e.after then return left < 0 end
     return e.ongoing or e.day > left
 end
 
 local function describe(e, blocked)
-    local when = e.ongoing and "ongoing" or ("D-" .. e.day .. " (" .. e.date .. ")")
+    local when = e.ongoing and "ongoing" or e.after and "after D-Day" or ("D-" .. e.day .. " (" .. e.date .. ")")
     local text = "- [" .. e.id .. "] " .. when .. " " .. e.title .. ": " .. e.plot
     if e.any then
         local sides = {}
@@ -147,7 +151,7 @@ local function worldNote(left, blocked)
             stopped[#stopped + 1] = "- [" .. e.id .. "] " .. e.title
         elseif isPast(e, left) then
             past[#past + 1] = describe(e, blocked)
-        elseif left - e.day <= WINDOW then
+        elseif e.day and left - e.day <= WINDOW then
             soon[#soon + 1] = describe(e, blocked)
         end
     end
@@ -178,7 +182,7 @@ end
 local function upcoming(left, blocked)
     local items = {}
     for _, e in ipairs(EVENTS) do
-        if #items < UPCOMING_COUNT and not isPast(e, left) and not blocked[e.id] then
+        if #items < UPCOMING_COUNT and e.day and not isPast(e, left) and not blocked[e.id] then
             items[#items + 1] = "D-" .. e.day .. " " .. e.title
         end
     end
