@@ -6,9 +6,21 @@
 
 ## 바뀐 이름 (이 폴더의 모든 파일에 적용됨)
 
-`로판세계에서 살아남는법_이름변경.charx` 는 사용자가 직접 적용을 마친 카드(타임라인 트리거·로어북·정규식 반영)에
-아래 이름 변경만 한 파일이다. 로어북 제목·키워드, 첫 메시지, 성별 패널·시작 화면 버튼 글자, Lua 주석까지 바꿨고
-변수 이름표(`cv_EirF`, `cv-toggle-Eir`, `fm_kiryen`, `setScenarioKiryen` 등 54곳)는 그대로 두었다.
+`로판세계에서 살아남는법_이름변경_v2.charx` 는 사용자가 직접 적용을 마친 카드(타임라인 트리거·로어북·정규식 반영)에
+아래 이름 변경을 한 파일이다. 로어북 제목·키워드, 첫 메시지, 성별 패널·시작 화면 버튼 글자, Lua 주석과
+변수 이름까지 전부 새 이름으로 바꿨다 (아래 '변수 이름' 표).
+
+**로어북 키워드 변형** (모델이 이름을 다르게 옮겨 써도 항목이 켜지게):
+
+| 항목 | 키워드 |
+|---|---|
+| 오리지널카르엔야 (♂/♀) | `카르엔야, 황제, Karenya, Kar'enya, Karenja, emperor` |
+| 피아체 (♂/♀) | `피아체, Piache, Piace` |
+| 뮤사 (♂/♀) | `뮤사, Myusa, Musa` |
+| 다프네야 (♂/♀) | `다프네야, Daphneya, Dafneya` |
+| 루스란 (♂/♀), 루니안 (♂/♀) | 각자 이름 + `미게티카, Migetica, Migetika` |
+
+지크하트(제국 이름)는 키워드로 넣지 않았다. 제국 이름은 거의 매 대화에 나오므로, 어느 인물 항목에 넣든 그 항목이 사실상 항상 켜진다.
 
 | 초안 | 변경안 |
 |---|---|
@@ -22,8 +34,21 @@
 | 히렌 | 뮤사 (Myusa) |
 | 아르크하임 가문 | 후겜 가문 (Hugem) — 에이르 → 헤드비히의 성이 아르크하임 → 후겜으로 바뀐 걸 보고 추정한 것 |
 
-로어북·트리거 안의 **변수 이름**(`cv_EirF`, `cv_ArenF`, `fm_kiryen`, `scenario`의 `kiryen` 같은 것)은
-버튼과 조건문이 서로 찾는 이름표라서, 캐릭터 이름을 바꿀 때도 바꾸지 않는다.
+**변수 이름**은 버튼·조건문·Lua·기본 변수 목록이 서로 찾는 이름표라서, 바꿀 때는 모든 곳을 한꺼번에 바꿔야 한다.
+v2 카드에서는 아래처럼 전부 맞춰 바꿨다.
+
+| 옛 이름 | 새 이름 |
+|---|---|
+| `cv_KiryenF` / `cv-toggle-Kiryen` | `cv_KarenyaF` / `cv-toggle-Karenya` |
+| `cv_EirF` / `cv-toggle-Eir` | `cv_HedwigF` / `cv-toggle-Hedwig` |
+| `cv_SeruaF` / `cv-toggle-Serua` | `cv_PiacheF` / `cv-toggle-Piache` |
+| `cv_HirenF` / `cv-toggle-Hiren` | `cv_MyusaF` / `cv-toggle-Myusa` |
+| `cv_ArenF` / `cv-toggle-Aren` | `cv_DaphneyaF` / `cv-toggle-Daphneya` |
+| `fm_kiryen` | `fm_karenya` |
+| `scenario` 값 `kiryen` | `karenya` |
+| `setScenarioKiryen`, `setPermaKiryen` | `setScenarioKarenya`, `setPermaKarenya` |
+
+루스란·루니안의 변수(`cv_RuslanF`, `cv_RunianF`)는 이름이 그대로라 바꾸지 않았다.
 
 ## 직접 넣는 방법
 
