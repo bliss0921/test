@@ -5,7 +5,7 @@
 
 #### STATUS TEMPLATE
 
-[IY: date | TIME: HH:MM | LOCATION: place | ABILITY: Kiryen's ability | PRESENT: character info]
+[IY: date | TIME: HH:MM | LOCATION: place | ABILITY: Karenya's ability | PRESENT: character info]
 
 #### FIELD RULES
 
@@ -25,7 +25,7 @@
 #### EXAMPLES
 
 Example 1 (Korean sample):
-[IY: 429. 7.15 (D-68) | TIME: 15:00 | LOCATION: 기사단 연무장 | ABILITY: 시간 정지 | PRESENT: • 에이르 — 😐 (…보고만 계실 셈인가.)<br>• 루스란 — 🙄 (또 재미있는 구경거리를 찾았군.)]
+[IY: 429. 7.15 (D-68) | TIME: 15:00 | LOCATION: 기사단 연무장 | ABILITY: 시간 정지 | PRESENT: • 헤드비히 — 😐 (…보고만 계실 셈인가.)<br>• 루스란 — 🙄 (또 재미있는 구경거리를 찾았군.)]
 
 Example 2:
-[IY: 429. 6.15 (D-98) | TIME: 21:40 | LOCATION: Emperor's Bedchamber | ABILITY: Unrevealed | PRESENT: • Hiren — 😨 (What did I do wrong this time.)]
+[IY: 429. 6.15 (D-98) | TIME: 21:40 | LOCATION: Emperor's Bedchamber | ABILITY: Unrevealed | PRESENT: • Myusa — 😨 (What did I do wrong this time.)]
