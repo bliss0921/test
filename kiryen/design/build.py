@@ -85,6 +85,7 @@ body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 .ks-meta{margin-top:3px;font-size:14px;color:var(--sub);line-height:1.6}
 .ks-meta i{font-style:normal;margin:0 6px;color:var(--edge)}
 .ks-meta b{font-weight:500;color:var(--wine)}
+.ks-ab{white-space:nowrap}
 .ks-rule{height:1px;background:var(--rule);margin:13px 0}
 .ks-th{display:flex;gap:14px;align-items:baseline}
 .ks-th + .ks-th{margin-top:9px}
@@ -104,23 +105,29 @@ body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 """
 
 
-def card(frame, crest=False, thoughts=THOUGHTS):
+def card(frame, crest=False, thoughts=THOUGHTS, head=None):
+    date, dday, time, place, ability = head or (DATE, DDAY, TIME, PLACE, ABILITY)
     th = ''.join(f'<div class="ks-th"><span class="ks-th-name">{n}</span><p>{t}</p></div>' for n, t in thoughts)
     th_block = f'<div class="ks-rule"></div>{th}' if thoughts else ''
     ev = ''.join(f'<li><b>{d}</b><span>{t}</span></li>' for d, t in EVENTS)
     style = f"--frame:url('frames/{frame}.svg')" + (";--crest:url('frames/crest_sun.svg')" if crest else '')
     return (f'<div class="ks{" ks-has-crest" if crest else ""}" style="{style}">' + ('<div class="ks-crest"></div>' if crest else '')
-            + f'<div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
-            f'<div class="ks-meta">{TIME}<i>·</i>{PLACE}<i>·</i>Ability <b>{ABILITY}</b></div>'
+            + f'<div class="ks-date"><span class="ks-iy">{date}</span><span class="ks-dday">{dday}</span></div>'
+            f'<div class="ks-meta">{time}<i>·</i>{place}<i>·</i><span class="ks-ab">Ability <b>{ability}</b></span></div>'
             f'{th_block}<div class="ks-rule"></div>'
-            f'<div class="ks-up-label">다가올 일</div><ol class="ks-up">{ev}</ol></div>')
+            f'<div class="ks-up-label">Upcoming</div><ol class="ks-up">{ev}</ol></div>')
 
 
+EN_HEAD = ('IY 429. 7.15', 'D-68', '15:00', 'Knights\' Training Grounds', 'Time Stop')
+EN_THOUGHTS = [
+    ('Hedwig', 'So you only intend to watch. If you came for someone else again, I would rather you just said so.'),
+    ('Ruslan', 'Found another amusing spectacle, have we? What scheme is it this time?'),
+]
 VARIANTS = {
-    'frame_corner': card('frame_corner'),
-    'frame_crest': card('frame_crest', crest=True),
-    'frame_cut': card('frame_cut'),
-    'frame_corner_one': card('frame_corner', thoughts=THOUGHTS[:1]),
+    'final': card('frame_cut'),
+    'final_one': card('frame_cut', thoughts=THOUGHTS[:1]),
+    'final_none': card('frame_cut', thoughts=[]),
+    'final_en': card('frame_cut', thoughts=EN_THOUGHTS, head=EN_HEAD),
 }
 for name, html in VARIANTS.items():
     open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8').write(
@@ -134,20 +141,15 @@ h2{font-size:16px;margin:24px 0 10px;color:#e3c58e}
 .row{display:flex;gap:28px;align-items:flex-start}
 .col{display:flex;flex-direction:column;gap:6px} .col span{font-size:13px;color:#a39d95}
 img{display:block;border-radius:10px;box-shadow:0 0 0 1px #2a2830}
-</style><h1>A안 + 로판풍 테두리 세 가지</h1>
-<p class="note">테두리만 그림이고 글자는 전부 HTML이라, 속마음이 몇 명이든·얼마나 길든 테두리가 내용에 맞춰 늘어납니다.<br>
-모서리 장식은 크기가 그대로이고, 변의 선만 늘어나는 방식(9조각 테두리)입니다.</p>
-<h2>1. 코너 장식 — 둥근 모서리 안쪽에 작은 아치와 마름모</h2><div class="row">
-<div class="col"><span>PC</span><img src="frame_corner_pc.png" style="width:680px"></div>
-<div class="col"><span>모바일</span><img src="frame_corner_m.png" style="width:375px"></div></div>
-<h2>2. 왕실 문장 — 얇은 이중선, 위 가운데 태양 문장</h2><div class="row">
-<div class="col"><span>PC</span><img src="frame_crest_pc.png" style="width:680px"></div>
-<div class="col"><span>모바일</span><img src="frame_crest_m.png" style="width:375px"></div></div>
-<h2>3. 모서리 컷 — 모서리를 비스듬히 자른 이중선</h2><div class="row">
-<div class="col"><span>PC</span><img src="frame_cut_pc.png" style="width:680px"></div>
-<div class="col"><span>모바일</span><img src="frame_cut_m.png" style="width:375px"></div></div>
-<h2>참고: 1번 테두리에 속마음이 한 명일 때 (모바일) — 테두리가 내용 높이에 맞춰짐</h2><div class="row">
-<div class="col"><img src="frame_corner_one_m.png" style="width:375px"></div></div>
+</style><h1>최종 시안 — 모서리 컷 · 아이보리 · 와인</h1>
+<p class="note">라벨은 영어 단어(Ability, Upcoming) 고정. 장면에 있는 인물의 속마음만 표시하고, 없으면 그 칸이 빠집니다.</p>
+<h2>기본 (장면에 두 명)</h2><div class="row">
+<div class="col"><span>PC</span><img src="final_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="final_m.png" style="width:375px"></div></div>
+<h2>한 명 / 아무도 없음 / 영어 출력 (모바일)</h2><div class="row">
+<div class="col"><span>한 명</span><img src="final_one_m.png" style="width:375px"></div>
+<div class="col"><span>아무도 없음</span><img src="final_none_m.png" style="width:375px"></div>
+<div class="col"><span>영어 출력</span><img src="final_en_m.png" style="width:375px"></div></div>
 """
-open(os.path.join(OUT, 'sheet_frames.html'), 'w', encoding='utf-8').write(SHEET)
+open(os.path.join(OUT, 'sheet_final.html'), 'w', encoding='utf-8').write(SHEET)
 print('built', sorted(os.listdir(OUT)))
