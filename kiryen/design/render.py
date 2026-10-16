@@ -12,10 +12,10 @@ def shot(pg, src, out, width):
 with sync_playwright() as p:
     b = p.chromium.launch(**({'executable_path': EXE} if EXE else {}))
     pg = b.new_page(device_scale_factor=2)
-    for v in ('img5', 'img1', 'txt5', 'txt1'):
+    for v in [f'{t}_{m}' for t in ('letter', 'velvet', 'blush') for m in ('5', '1')]:
         shot(pg, f'{v}.html', f'{v}_pc.png', 680)
         shot(pg, f'{v}.html', f'{v}_m.png', 375)
     pg2 = b.new_page(device_scale_factor=1)
-    for s in ('sheet_images', 'sheet_text'):
-        shot(pg2, f'{s}.html', f'{s}.png', 1244)
+    for s, w in (('sheet_letter', 1244), ('sheet_velvet', 1244), ('sheet_blush', 1244), ('sheet_overview', 1304)):
+        shot(pg2, f'{s}.html', f'{s}.png', w)
     b.close()

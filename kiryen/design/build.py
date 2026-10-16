@@ -1,5 +1,5 @@
-# python3 build.py  →  out/*.html (시안 4종) + out/sheet_*.html (비교판)
-# 렌더: python3 ../../redmoon/render.py out/sheet_images.html out/sheet_images.png ...
+# python3 build.py  →  out/{테마}_{5|1}.html (시안) + out/sheet_*.html (비교판)
+# 렌더: python3 render.py
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -9,204 +9,142 @@ os.makedirs(OUT, exist_ok=True)
 # ---------------------------------------------------------------- 예시 데이터
 DATE, DDAY, TIME, PLACE, ABILITY = 'IY 429. 7.15', 'D-68', '15:00', '기사단 연무장', '시간 정지'
 EVENTS = [('D-68', '하계 무술대회', '오늘'), ('D-55', '루스란, 다프네야 협력 수락', ''), ('D-49', '다프네야 → 피아체 접촉', '')]
-CAST = [  # 키, 이름, 머리색, 눈색, 장면에 있음, 속마음
-    ('Hedwig', '헤드비히', '#1c1a1d', '#c9a24a', True, '…보고만 계실 셈인가. 예전처럼 다른 자를 보러 오신 거라면, 차라리 그렇다고 말씀하시지.'),
-    ('Piache', '피아체', '#d8d4e4', '#8f7bc0', False, ''),
-    ('Ruslan', '루스란', '#ece6e2', '#b0404a', True, '또 재미있는 구경거리를 찾았군. 이번엔 무슨 꿍꿍이지?'),
-    ('Myusa', '뮤사', '#b5523e', '#9a9aa2', False, ''),
-    ('Daphneya', '다프네야', '#d9c27a', '#6f8fc4', False, ''),
+CAST = [  # 키, 이름, 장면에 있음, 속마음
+    ('hedwig', '헤드비히', True, '…보고만 계실 셈인가. 예전처럼 다른 자를 보러 오신 거라면, 차라리 그렇다고 말씀하시지.'),
+    ('piache', '피아체', False, '-'),
+    ('ruslan', '루스란', True, '또 재미있는 구경거리를 찾았군. 이번엔 무슨 꿍꿍이지?'),
+    ('myusa', '뮤사', False, '-'),
+    ('daphneya', '다프네야', False, '-'),
 ]
 FOCUS = CAST[0]
 PROSE = '헤드비히의 시선이 연무장 너머, 황제가 선 자리로 천천히 옮겨 갔다. 아무도 그 눈빛의 의미를 묻지 않았다.'
 
-
-def portrait(hair, eye):
-    """실제 초상 대신 쓰는 임시 실루엣 (머리색·눈색으로 칠함)"""
-    svg = (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 160'>"
-           f"<defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>"
-           f"<stop offset='0' stop-color='{eye}' stop-opacity='.55'/><stop offset='1' stop-color='#141118'/></linearGradient></defs>"
-           f"<rect width='120' height='160' fill='#201b26'/><rect width='120' height='160' fill='url(#g)'/>"
-           f"<path d='M10 160 C14 116 38 98 60 98 C82 98 106 116 110 160 Z' fill='{hair}' opacity='.5'/>"
-           f"<circle cx='60' cy='64' r='27' fill='{hair}' opacity='.85'/></svg>")
-    return 'data:image/svg+xml;utf8,' + svg.replace('#', '%23')
-
-
-SUN = ("<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='1.2'>"
-       "<circle cx='12' cy='12' r='4.2'/><g stroke-linecap='round'>"
-       + ''.join(f"<line x1='12' y1='2.2' x2='12' y2='5.2' transform='rotate({a} 12 12)'/>" for a in range(0, 360, 45))
-       + "</g></svg>")
+THEMES = {
+    'letter': ('왕실 서신', '아이보리 종이에 와인색 글씨. 편지지처럼 이중 테두리와 가운데 장식선.',
+               '--bg1:#fbf6ec;--bg2:#f2e7d3;--ink:#3b2c27;--sub:#5f4c42;--muted:#76604f;--title:#6e1f30;--gold:#9a7536;'
+               '--frame:#c8a76b;--frame2:rgba(154,117,54,.38);--pill-bg:#6e1f30;--pill-fg:#fbf3e6;--foot:#eee1c8;'
+               '--row-bg:rgba(255,255,255,.6);--row-line:rgba(154,117,54,.25);--shadow:0 8px 22px rgba(0,0,0,.35);'
+               '--hedwig:#8a6516;--piache:#6a4d99;--ruslan:#9b2c3a;--myusa:#a0432a;--daphneya:#2f5b8c'),
+    'velvet': ('와인 벨벳', '어두운 와인색 바탕에 샴페인 금색. 채팅 화면이 어두울 때 눈이 편한 쪽.',
+               '--bg1:#3a1521;--bg2:#230c14;--ink:#f6ece6;--sub:#e3cfc4;--muted:#c3a89d;--title:#f1d3a8;--gold:#e2ba7a;'
+               '--frame:rgba(226,186,122,.6);--frame2:rgba(226,186,122,.28);--pill-bg:#e2ba7a;--pill-fg:#2a0f17;--foot:rgba(0,0,0,.22);'
+               '--row-bg:rgba(255,255,255,.05);--row-line:rgba(226,186,122,.2);--shadow:0 8px 22px rgba(0,0,0,.45);'
+               '--hedwig:#ecc86c;--piache:#cdb9f2;--ruslan:#f4a4ae;--myusa:#f3a283;--daphneya:#a9c6f0'),
+    'blush': ('블러시 파스텔', '연분홍 바탕에 장밋빛 글씨. 웹툰 로판 표지 같은 부드러운 쪽.',
+              '--bg1:#fdf6f6;--bg2:#f6e4e8;--ink:#47313a;--sub:#644d57;--muted:#7d5f6a;--title:#8e3f5c;--gold:#a87f4f;'
+              '--frame:#d9a9b5;--frame2:rgba(201,121,143,.35);--pill-bg:#b9677f;--pill-fg:#fff;--foot:#f3dfe4;'
+              '--row-bg:rgba(255,255,255,.72);--row-line:rgba(201,121,143,.25);--shadow:0 8px 22px rgba(0,0,0,.3);'
+              '--hedwig:#86621a;--piache:#6b4f9e;--ruslan:#a3354a;--myusa:#a24a33;--daphneya:#34619a'),
+}
 
 CSS = """
 @font-face{font-family:'Gowun Batang';src:url(../fonts/GowunBatang-Regular.ttf);font-weight:400}
 @font-face{font-family:'Gowun Batang';src:url(../fonts/GowunBatang-Bold.ttf);font-weight:700}
 @font-face{font-family:'Noto Sans KR';src:url(../fonts/NotoSansKR.ttf);font-weight:100 900}
-@font-face{font-family:'Cormorant Garamond';src:url(../fonts/CormorantGaramond.ttf);font-weight:300 700}
 html,body{margin:0;background:#1e1d22}
 body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
-.chat{color:#d6d3cf;font-size:15px;line-height:1.75;margin:0 0 6px;max-width:640px}
+.chat{color:#d6d3cf;font-size:15px;line-height:1.75;margin:0 0 8px;max-width:640px}
 
-/* ---------- 공통 틀 ---------- */
-.ks [class*='ks-iy'],.ks [class*='ks-dday'],.ks-events b,.ks-focus-name span,.ks-solo-by span{font-variant-numeric:lining-nums}
-.ks{--line:rgba(201,169,110,.22);--gold:#c9a96e;--gold2:#ead6a6;--ivory:#efe7d8;--muted:#a1968a;--dim:#6f6776;--rose:#c8707a;
-  max-width:640px;color:var(--ivory);font-family:'Noto Sans KR',sans-serif;
-  background:linear-gradient(180deg,#1f1a26 0%,#16131c 55%,#131017 100%);
-  border:1px solid var(--line);border-radius:14px;overflow:hidden;
-  box-shadow:0 10px 28px rgba(0,0,0,.38),inset 0 1px 0 rgba(234,214,166,.07)}
+.ks{max-width:640px;color:var(--ink);font-family:'Noto Sans KR',sans-serif;
+  background:linear-gradient(180deg,var(--bg1),var(--bg2));border:1px solid var(--frame);border-radius:6px;
+  box-shadow:inset 0 0 0 4px var(--bg1),inset 0 0 0 5px var(--frame2),var(--shadow);padding:6px}
 .ks *{box-sizing:border-box}
-.ks-head{display:flex;align-items:center;gap:12px;padding:14px 16px 12px;border-bottom:1px solid var(--line);
-  background:radial-gradient(120% 160% at 0% 0%,rgba(201,169,110,.11),transparent 62%)}
-.ks-sun{flex:0 0 34px;height:34px;border-radius:50%;border:1px solid rgba(201,169,110,.45);display:flex;align-items:center;justify-content:center;color:var(--gold);
-  box-shadow:inset 0 0 12px rgba(201,169,110,.12)}
-.ks-when{flex:1;min-width:0}
-.ks-date{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.ks-iy{font-family:'Cormorant Garamond','Gowun Batang',serif;font-size:22px;font-weight:600;color:var(--gold2);line-height:1;letter-spacing:.2px}
-.ks-dday{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:700;color:var(--rose);border:1px solid rgba(200,112,122,.55);
-  border-radius:999px;padding:1px 9px;line-height:1.35;letter-spacing:.6px}
-.ks-sub{margin-top:6px;font-size:13px;color:var(--muted);display:flex;gap:7px;flex-wrap:wrap;line-height:1.3}
-.ks-loc{color:var(--ivory)}
-.ks-ab{flex:0 0 auto;text-align:right;padding-left:14px;border-left:1px solid var(--line);line-height:1.3}
-.ks-ab small{display:block;font-family:'Cormorant Garamond',serif;font-size:10px;font-weight:700;letter-spacing:2.6px;color:var(--dim)}
-.ks-ab span{font-family:'Gowun Batang',serif;font-size:15px;color:var(--gold)}
-.ks-foot{padding:11px 16px 13px;border-top:1px solid var(--line);background:rgba(0,0,0,.14)}
-.ks-foot-label{font-family:'Cormorant Garamond',serif;font-size:10px;font-weight:700;letter-spacing:2.6px;color:var(--dim);margin-bottom:7px}
-.ks-events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
-.ks-events li{display:flex;align-items:baseline;gap:9px;font-size:13px;color:var(--muted);line-height:1.4}
-.ks-events b{flex:0 0 38px;font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--gold);font-weight:700}
-.ks-events em{font-style:normal;font-size:11px;color:var(--rose);border:1px solid rgba(200,112,122,.45);border-radius:999px;padding:0 7px}
-.ks-events li:first-child{color:var(--ivory)}
 
-/* ---------- A. 이미지 · 5인 ---------- */
-.ks-cast{display:flex;justify-content:center;gap:10px;padding:14px 16px 4px}
-.ks-card{flex:1;min-width:0;max-width:96px;text-align:center}
-.ks-pic{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:3/4;border:1px solid rgba(201,169,110,.35);background:#201b26}
-.ks-pic img{width:100%;height:100%;object-fit:cover;display:block}
-.ks-card.on .ks-pic{border-color:rgba(234,214,166,.75);box-shadow:0 0 0 2px rgba(201,169,110,.18),0 6px 16px rgba(0,0,0,.35)}
-.ks-card.off .ks-pic{filter:grayscale(1) brightness(.55);opacity:.45;border-style:dashed}
-.ks-name{margin-top:6px;font-size:12.5px;color:var(--ivory);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ks-card.off .ks-name{color:var(--dim)}
-.ks-card.on .ks-name:before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gold);margin:0 5px 2px 0}
-.ks-thoughts{padding:8px 16px 14px;display:flex;flex-direction:column;gap:8px}
-.ks-th{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:10px;background:rgba(201,169,110,.06);border:1px solid rgba(201,169,110,.12)}
-.ks-th-name{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--gold);padding-top:2px;white-space:nowrap}
-.ks-th p,.ks-quote{margin:0;font-family:'Gowun Batang',serif;font-size:14.5px;line-height:1.7;color:var(--ivory)}
-.ks-th.off{display:none}
+/* 머리: 가운데 정렬 */
+.ks-head{text-align:center;padding:14px 16px 12px}
+.ks-date{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap}
+.ks-iy{font-family:'Gowun Batang',serif;font-weight:700;font-size:21px;color:var(--title);letter-spacing:.3px;line-height:1.2}
+.ks-dday{font-size:12.5px;font-weight:700;color:var(--pill-fg);background:var(--pill-bg);border-radius:999px;padding:2px 9px;line-height:1.4;letter-spacing:.3px}
+.ks-sub{margin-top:6px;font-size:14px;color:var(--sub);line-height:1.4}
+.ks-sub i{font-style:normal;margin:0 7px;color:var(--frame)}
+.ks-ab{display:inline-flex;align-items:baseline;gap:8px;margin-top:10px;padding:4px 14px;border-radius:999px;border:1px solid var(--row-line);background:var(--row-bg);font-size:13.5px}
+.ks-ab b{font-weight:500;color:var(--muted)}
+.ks-ab span{font-family:'Gowun Batang',serif;font-weight:700;font-size:14.5px;color:var(--title)}
 
-/* ---------- A. 이미지 · 단일 ---------- */
-.ks-focus{display:flex;gap:16px;padding:16px;align-items:stretch}
-.ks-focus .ks-pic{flex:0 0 112px;aspect-ratio:3/4;border-color:rgba(234,214,166,.75);box-shadow:0 0 0 2px rgba(201,169,110,.18),0 8px 18px rgba(0,0,0,.4)}
-.ks-focus-text{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
-.ks-focus-name{font-family:'Gowun Batang',serif;font-size:18px;font-weight:700;color:var(--gold2)}
-.ks-focus-name span{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--dim);margin-left:6px;letter-spacing:.5px}
-.ks-focus .ks-quote{margin-top:10px;padding-left:12px;border-left:2px solid rgba(201,169,110,.5)}
+/* 장식선: 가운데 마름모 */
+.ks-orn{position:relative;height:1px;margin:2px 22px 0;background:linear-gradient(90deg,transparent,var(--frame) 18%,var(--frame) 82%,transparent)}
+.ks-orn:after{content:'';position:absolute;left:50%;top:-4px;width:7px;height:7px;margin-left:-4px;transform:rotate(45deg);background:var(--bg1);border:1px solid var(--frame)}
 
-/* ---------- B. 텍스트 · 5인 ---------- */
-.ks-list{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px}
-.ks-row{order:1;flex:0 0 100%;display:flex;gap:11px;align-items:flex-start;padding:10px 12px;border-radius:10px;
-  background:rgba(201,169,110,.06);border:1px solid rgba(201,169,110,.12)}
-.ks-mono{flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-family:'Gowun Batang',serif;font-size:14px;font-weight:700;color:#141118;background:var(--c)}
-.ks-row-body{flex:1;min-width:0}
-.ks-row-name{font-size:12px;font-weight:600;color:var(--gold);line-height:1.2;margin:1px 0 3px}
-.ks-row p{margin:0;font-family:'Gowun Batang',serif;font-size:14.5px;line-height:1.7;color:var(--ivory)}
-.ks-row.off{order:2;flex:0 0 auto;padding:4px 10px 4px 5px;align-items:center;gap:6px;border-radius:999px;background:transparent;border-color:rgba(161,150,138,.22)}
-.ks-row.off .ks-mono{flex-basis:20px;height:20px;font-size:10px;filter:grayscale(1);opacity:.5}
-.ks-row.off .ks-row-name{margin:0;color:var(--dim);font-weight:500}
-.ks-row.off p{display:none}
+/* 인물 */
+.c-hedwig{--c:var(--hedwig)} .c-piache{--c:var(--piache)} .c-ruslan{--c:var(--ruslan)} .c-myusa{--c:var(--myusa)} .c-daphneya{--c:var(--daphneya)}
+.ks-list{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 0;padding:16px 14px 14px}
+.ks-row.on,.ks-solo{order:1;flex:0 0 100%;padding:10px 14px 11px;border-radius:6px;background:var(--row-bg);border:1px solid var(--row-line);border-left:3px solid var(--c)}
+.ks-name{font-family:'Gowun Batang',serif;font-weight:700;font-size:14.5px;color:var(--c);line-height:1.3}
+.ks-thought{margin:4px 0 0;font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.75;color:var(--ink)}
+.ks-row.off{order:2;flex:0 0 auto}
+.ks-row.off .ks-thought{display:none}
+.ks-row.off .ks-name{font-family:'Noto Sans KR',sans-serif;font-weight:500;font-size:14px;color:var(--muted)}
+.ks-row.off ~ .ks-row.off .ks-name:before{content:'·';margin:0 7px;color:var(--frame)}
+.ks-absent-label{order:2;flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted);margin:0 10px 0 2px}
 .ks-list:not(:has(.ks-row.off)) .ks-absent-label{display:none}
-.ks-absent-label{order:2;flex:0 0 auto;align-self:center;font-family:'Cormorant Garamond',serif;font-size:10px;font-weight:700;letter-spacing:2.4px;color:var(--dim);margin-right:2px}
+.ks-solo-wrap{padding:16px 14px 14px}
 
-/* ---------- B. 텍스트 · 단일 ---------- */
-.ks-solo{padding:16px 18px 16px 52px;position:relative}
-.ks-solo:before{content:'\\201C';position:absolute;left:16px;top:4px;font-family:'Cormorant Garamond',serif;font-size:58px;line-height:1;color:rgba(201,169,110,.45)}
-.ks-solo .ks-quote{font-size:15.5px}
-.ks-solo-by{margin-top:8px;font-size:12.5px;color:var(--gold)}
-.ks-solo-by span{color:var(--dim);font-family:'Cormorant Garamond',serif;font-size:13px;margin-left:4px}
+/* 다가올 일 */
+.ks-foot{margin:0 0 0;padding:12px 18px 13px;background:var(--foot);border-top:1px solid var(--row-line);border-radius:0 0 3px 3px}
+.ks-foot-label{font-size:13px;font-weight:700;color:var(--title);margin-bottom:6px}
+.ks-events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.ks-events li{display:flex;align-items:baseline;gap:10px;font-size:14px;color:var(--ink);line-height:1.5}
+.ks-events b{flex:0 0 40px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+.ks-events em{font-style:normal;font-size:12px;font-weight:700;color:var(--title);border:1px solid var(--frame);border-radius:999px;padding:0 8px;line-height:1.5}
 
-/* ---------- 모바일 ---------- */
 @media (max-width:480px){
-  .ks-head{flex-wrap:wrap;padding:12px 13px 11px;gap:10px}
+  .ks{padding:5px}
+  .ks-head{padding:12px 10px 11px}
   .ks-iy{font-size:20px}
-  .ks-ab{flex:0 0 100%;text-align:left;border-left:0;padding:8px 0 0 44px;border-top:1px dashed rgba(201,169,110,.18);display:flex;align-items:baseline;gap:8px}
-  .ks-ab small{display:inline}
-  .ks-cast{gap:5px;padding:12px 12px 2px}
-  .ks-name{font-size:11px}
-  .ks-card.on .ks-name:before{display:none}
-  .ks-thoughts,.ks-list{padding-left:12px;padding-right:12px}
-  .ks-focus{padding:13px;gap:12px}
-  .ks-focus .ks-pic{flex-basis:88px}
-  .ks-solo{padding:14px 14px 14px 44px}
-  .ks-solo:before{left:12px}
-  .ks-foot{padding:10px 13px 12px}
+  .ks-list,.ks-solo-wrap{padding:14px 10px 12px}
+  .ks-orn{margin:2px 14px 0}
+  .ks-foot{padding:11px 13px 12px}
 }
 """
 
 
 def head():
-    return (f'<div class="ks-head"><div class="ks-sun">{SUN}</div>'
-            f'<div class="ks-when"><div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
-            f'<div class="ks-sub"><span>{TIME}</span><span>·</span><span class="ks-loc">{PLACE}</span></div></div>'
-            f'<div class="ks-ab"><small>ABILITY</small><span>{ABILITY}</span></div></div>')
+    return (f'<div class="ks-head"><div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
+            f'<div class="ks-sub">{TIME}<i>·</i>{PLACE}</div>'
+            f'<div class="ks-ab"><b>능력</b><span>{ABILITY}</span></div></div><div class="ks-orn"></div>')
 
 
 def foot():
-    items = ''.join(f'<li><b>{d}</b>{t}{f" <em>{tag}</em>" if tag else ""}</li>' for d, t, tag in EVENTS)
-    return f'<div class="ks-foot"><div class="ks-foot-label">UPCOMING</div><ol class="ks-events">{items}</ol></div>'
+    items = ''.join(f'<li><b>{d}</b><span>{t}{f" <em>{tag}</em>" if tag else ""}</span></li>' for d, t, tag in EVENTS)
+    return f'<div class="ks-foot"><div class="ks-foot-label">다가올 일</div><ol class="ks-events">{items}</ol></div>'
 
 
-def body_img5():
-    cards = ''.join(f'<div class="ks-card {"on" if on else "off"}"><div class="ks-pic"><img src="{portrait(h, e)}"></div>'
-                    f'<div class="ks-name">{ko}</div></div>' for k, ko, h, e, on, t in CAST)
-    th = ''.join(f'<div class="ks-th {"on" if on else "off"}"><span class="ks-th-name">{ko}</span><p>{t or "-"}</p></div>'
-                 for k, ko, h, e, on, t in CAST)
-    return f'<div class="ks-cast">{cards}</div><div class="ks-thoughts">{th}</div>'
+def body5():
+    rows = ''.join(f'<div class="ks-row {"on" if on else "off"} c-{k}"><div class="ks-name">{ko}</div><p class="ks-thought">{t}</p></div>'
+                   for k, ko, on, t in CAST)
+    return f'<div class="ks-list"><span class="ks-absent-label">자리에 없음</span>{rows}</div>'
 
 
-def body_img1():
-    k, ko, h, e, on, t = FOCUS
-    return (f'<div class="ks-focus"><div class="ks-pic"><img src="{portrait(h, e)}"></div>'
-            f'<div class="ks-focus-text"><div class="ks-focus-name">{ko}<span>{k}</span></div><p class="ks-quote">{t}</p></div></div>')
+def body1():
+    k, ko, on, t = FOCUS
+    return f'<div class="ks-solo-wrap"><div class="ks-solo c-{k}"><div class="ks-name">{ko}</div><p class="ks-thought">{t}</p></div></div>'
 
 
-def body_txt5():
-    rows = ''.join(f'<div class="ks-row {"on" if on else "off"}"><span class="ks-mono" style="--c:{e}">{ko[0]}</span>'
-                   f'<div class="ks-row-body"><div class="ks-row-name">{ko}</div><p>{t or "-"}</p></div></div>'
-                   for k, ko, h, e, on, t in CAST)
-    return f'<div class="ks-list"><span class="ks-absent-label">ABSENT</span>{rows}</div>'
-
-
-def body_txt1():
-    k, ko, h, e, on, t = FOCUS
-    return f'<div class="ks-solo"><p class="ks-quote">{t}</p><div class="ks-solo-by">— {ko}<span>{k}</span></div></div>'
-
-
-VARIANTS = {'img5': body_img5, 'img1': body_img1, 'txt5': body_txt5, 'txt1': body_txt1}
-for name, body in VARIANTS.items():
-    html = (f'<!doctype html><meta charset="utf-8"><style>{CSS}</style>'
-            f'<p class="chat">{PROSE}</p><div class="ks">{head()}{body()}{foot()}</div>')
-    open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8').write(html)
+for theme, (label, note, vars_) in THEMES.items():
+    for mode, body in (('5', body5), ('1', body1)):
+        html = (f'<!doctype html><meta charset="utf-8"><style>{CSS}.ks{{{vars_}}}</style>'
+                f'<p class="chat">{PROSE}</p><div class="ks">{head()}{body()}{foot()}</div>')
+        open(os.path.join(OUT, f'{theme}_{mode}.html'), 'w', encoding='utf-8').write(html)
 
 SHEET = """<!doctype html><meta charset="utf-8"><style>
 @font-face{font-family:'Noto Sans KR';src:url(../fonts/NotoSansKR.ttf);font-weight:100 900}
-body{margin:0;background:#121115;color:#e9e4da;font-family:'Noto Sans KR',sans-serif;padding:28px 32px;width:1180px}
-h1{font-size:22px;margin:0 0 4px} .note{color:#9a948c;font-size:13px;margin:0 0 22px}
-h2{font-size:16px;margin:26px 0 10px;color:#d8c08a}
+body{margin:0;background:#121115;color:#e9e4da;font-family:'Noto Sans KR',sans-serif;padding:28px 32px;width:%dpx}
+h1{font-size:22px;margin:0 0 4px} .note{color:#a39d95;font-size:14px;margin:0 0 18px}
+h2{font-size:16px;margin:24px 0 10px;color:#e3c58e}
 .row{display:flex;gap:28px;align-items:flex-start}
-.col{display:flex;flex-direction:column;gap:6px} .col span{font-size:12px;color:#8f8a84}
+.col{display:flex;flex-direction:column;gap:6px} .col span{font-size:13px;color:#a39d95}
 img{display:block;border-radius:10px;box-shadow:0 0 0 1px #2a2830}
-</style>
-<h1>%s</h1><p class="note">%s</p>%s"""
+</style><h1>%s</h1><p class="note">%s</p>%s"""
 
+for theme, (label, note, _) in THEMES.items():
+    blocks = ''.join(f'<h2>{m}</h2><div class="row"><div class="col"><span>PC</span><img src="{theme}_{k}_pc.png" style="width:680px"></div>'
+                     f'<div class="col"><span>모바일</span><img src="{theme}_{k}_m.png" style="width:375px"></div></div>'
+                     for k, m in (('5', '5인 버전'), ('1', '단일 버전')))
+    open(os.path.join(OUT, f'sheet_{theme}.html'), 'w', encoding='utf-8').write(SHEET % (1180, f'{label}', note, blocks))
 
-def sheet(fname, title, note, pairs):
-    blocks = ''.join(f'<h2>{label}</h2><div class="row"><div class="col"><span>PC</span><img src="{v}_pc.png" style="width:680px"></div>'
-                     f'<div class="col"><span>모바일</span><img src="{v}_m.png" style="width:375px"></div></div>' for v, label in pairs)
-    open(os.path.join(OUT, fname), 'w', encoding='utf-8').write(SHEET % (title, note, blocks))
-
-
-sheet('sheet_images.html', '시안 A · 인물 이미지 있음',
-      '인물 자리의 실루엣은 임시 그림입니다. 실제로는 hedwig_0 / hedwig_1 처럼 올린 초상이 성별에 맞게 들어갑니다. 장면에 없는 인물은 흐리게.',
-      [('img5', '5인 버전'), ('img1', '단일 버전')])
-sheet('sheet_text.html', '시안 B · 텍스트만',
-      '이미지 없이 이니셜 원(인물별 눈 색)으로 구분. 5인 버전은 장면에 있는 인물만 속마음이 보이고, 없는 인물은 아래쪽 작은 칩으로 모입니다.',
-      [('txt5', '5인 버전'), ('txt1', '단일 버전')])
-print('built', sorted(os.listdir(OUT)))
+overview = ''.join(f'<div class="col"><span>{i}. {THEMES[t][0]}</span><img src="{t}_5_m.png" style="width:375px"></div>'
+                   for i, t in enumerate(THEMES, 1))
+open(os.path.join(OUT, 'sheet_overview.html'), 'w', encoding='utf-8').write(
+    SHEET % (1240, '세 가지 방향 한눈에 보기 (모바일 · 5인 버전)', '사진 없이 이름 색과 왼쪽 색 줄로 인물을 구분합니다. 장면에 없는 인물은 아래 한 줄로 모입니다.',
+             f'<div class="row">{overview}</div>'))
+print('built', len(os.listdir(OUT)), 'files')
