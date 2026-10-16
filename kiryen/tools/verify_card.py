@@ -109,7 +109,7 @@ for scen in VALS['kc_scenario']:
     check(bool(R(lore['유저빙의=카르엔야'], tg).strip()) == k0, f'premise karenya {scen}')
     check(bool(R(lore['빙의상태 카르엔야 설정'], tg).strip()) == k0, f'possession settings {scen}')
     check(bool(R(lore['유저빙의=다른사람'], tg).strip()) == (scen == '1'), f'premise other {scen}')
-    check(bool(R(lore['유저=빙의없음'], tg).strip()) == (scen == '2'), f'premise native {scen}')
+    check(not any(k for k in lore if '빙의없음' in k), 'no native premise lorebook (빙의 없음은 페르소나 그대로)')
     nov = R(lore['원작소설'], tg)
     check(('The Novel and This World' in nov) == (scen != '2') and ('novel' in nov.lower()) == (scen != '2'), f'novel frame {scen}')
     check('### World History' in nov and 'IY 416' in nov and 'IY 429, June 13 — The story begins.' in nov, f'history kept {scen}')

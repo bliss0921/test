@@ -180,21 +180,6 @@ STATUS_LORE = """### STATUS RULE
 {{/when}}
 """
 
-NATIVE_LORE = """{{#when::kc_scenario::tis::2}}
-
-### Premise
-
-{{user}} is a native of this world, born and raised here, with no memory of any other life and no knowledge of what is to come. {{user}}'s name, background, and position are whatever {{user}} establishes.
-
-One hundred days from the story's start, a coordinated rebellion against Emperor Karenya is set to break out. {{user}} does not know this. It approaches through the world's own causes, and {{user}} meets it only as it surfaces.
-
-### Naming Rule
-
-In narration and dialogue, {{user}} is referred to by the name and position {{user}} holds in this world. Never use meta expressions such as "user" or "player" in-story.
-
-{{/when}}
-"""
-
 KARENYA_LIST = (SCEN_OTHER, '- Karenya Valkzephas Gabitz di Sieghart (카르엔야 발크제파스 가비츠 디 지크하트) — 27, '
                 + gender_text('karenya', 'male. 169 cm,', 'female. 169 cm,')
                 + ' long black hair, black eyes. Emperor of the Sieghart Empire. Hedwig\'s spouse; Piache and Ruslan are consorts, Myusa a bedslave. Imperial Palace.')
@@ -260,15 +245,6 @@ assert [e['comment'] for e in entries] == [l['comment'] for l in m['lorebook']]
 for e, lore in zip(entries, m['lorebook']):
     e['content'] = lore['content']
 
-# 빙의 없음 전제 (빙의 폴더, '유저빙의=다른사람' 바로 뒤)
-at = [l['comment'] for l in m['lorebook']].index('유저빙의=다른사람') + 1
-native = copy.deepcopy(m['lorebook'][at - 1])
-native.update(comment='유저=빙의없음', content=NATIVE_LORE, insertorder=3)
-m['lorebook'].insert(at, native)
-native_e = copy.deepcopy(entries[at - 1])
-native_e.update(comment='유저=빙의없음', name='유저=빙의없음', content=NATIVE_LORE, insertion_order=3)
-entries.insert(at, native_e)
-changed.append('유저=빙의없음 (new)')
 
 # ---------------------------------------------------------------- 6. 배경 HTML (CSS)
 bg = risu['backgroundHTML']

@@ -183,7 +183,7 @@ local function worldNote(left, blocked, scen)
 
     local soonTitle = "Approaching within " .. WINDOW .. " days (the novel's course, which {{user}} remembers as a reader):"
     if scen == "2" then
-        soonTitle = "Approaching within " .. WINDOW .. " days (the course events take while their causes stand; {{user}} has no foreknowledge of it):"
+        soonTitle = "Approaching within " .. WINDOW .. " days (the course events take while their causes stand):"
     end
 
     local lines = {

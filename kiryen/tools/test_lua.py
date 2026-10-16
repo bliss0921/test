@@ -132,7 +132,7 @@ n0 = request()[2][1]
 toggles(kc_scenario='2')
 n2 = request()[2][1]
 check('remembers as a reader' in n0, 'scenario 0 note mentions reader memory')
-check('novel' not in n2.lower() and '원작' not in n2 and 'no foreknowledge' in n2, 'scenario 2 note has no novel wording')
+check('novel' not in n2.lower() and '원작' not in n2 and '(the course events take while their causes stand):' in n2, 'scenario 2 note has no novel wording')
 toggles(kc_scenario='1')
 check('remembers as a reader' in request()[2][1], 'scenario 1 note mentions reader memory')
 set_chat([("char", "x [IY: 429. 9.25 | 15:00 | x | y]"), ("user", "go")])
