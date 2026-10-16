@@ -1,4 +1,4 @@
-# python3 render.py  →  out/{시안}_pc.png, out/{시안}_m.png, out/sheet_*.png
+# python3 render.py  →  out/{시안}_pc.png, out/{시안}_m.png, out/sheet_minimal.png
 import os
 from playwright.sync_api import sync_playwright
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.join(HERE, 'out')
@@ -12,10 +12,9 @@ def shot(pg, src, out, width):
 with sync_playwright() as p:
     b = p.chromium.launch(**({'executable_path': EXE} if EXE else {}))
     pg = b.new_page(device_scale_factor=2)
-    for v in [f'{t}_{m}' for t in ('letter', 'velvet', 'blush') for m in ('5', '1')]:
+    for v in ('minimal_a', 'minimal_b', 'minimal_one', 'minimal_none'):
         shot(pg, f'{v}.html', f'{v}_pc.png', 680)
         shot(pg, f'{v}.html', f'{v}_m.png', 375)
     pg2 = b.new_page(device_scale_factor=1)
-    for s, w in (('sheet_letter', 1244), ('sheet_velvet', 1244), ('sheet_blush', 1244), ('sheet_overview', 1304)):
-        shot(pg2, f'{s}.html', f'{s}.png', w)
+    shot(pg2, 'sheet_minimal.html', 'sheet_minimal.png', 1244)
     b.close()

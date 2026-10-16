@@ -1,4 +1,4 @@
-# python3 build.py  →  out/{테마}_{5|1}.html (시안) + out/sheet_*.html (비교판)
+# python3 build.py  →  out/minimal_*.html (시안) + out/sheet_minimal.html (비교판)
 # 렌더: python3 render.py
 import os
 
@@ -8,34 +8,12 @@ os.makedirs(OUT, exist_ok=True)
 
 # ---------------------------------------------------------------- 예시 데이터
 DATE, DDAY, TIME, PLACE, ABILITY = 'IY 429. 7.15', 'D-68', '15:00', '기사단 연무장', '시간 정지'
-EVENTS = [('D-68', '하계 무술대회', '오늘'), ('D-55', '루스란, 다프네야 협력 수락', ''), ('D-49', '다프네야 → 피아체 접촉', '')]
-CAST = [  # 키, 이름, 장면에 있음, 속마음
-    ('hedwig', '헤드비히', True, '…보고만 계실 셈인가. 예전처럼 다른 자를 보러 오신 거라면, 차라리 그렇다고 말씀하시지.'),
-    ('piache', '피아체', False, '-'),
-    ('ruslan', '루스란', True, '또 재미있는 구경거리를 찾았군. 이번엔 무슨 꿍꿍이지?'),
-    ('myusa', '뮤사', False, '-'),
-    ('daphneya', '다프네야', False, '-'),
+EVENTS = [('D-68', '하계 무술대회'), ('D-55', '루스란, 다프네야 협력 수락'), ('D-49', '다프네야 → 피아체 접촉')]
+THOUGHTS = [  # 장면에 있는 인물만
+    ('헤드비히', '…보고만 계실 셈인가. 예전처럼 다른 자를 보러 오신 거라면, 차라리 그렇다고 말씀하시지.'),
+    ('루스란', '또 재미있는 구경거리를 찾았군. 이번엔 무슨 꿍꿍이지?'),
 ]
-FOCUS = CAST[0]
 PROSE = '헤드비히의 시선이 연무장 너머, 황제가 선 자리로 천천히 옮겨 갔다. 아무도 그 눈빛의 의미를 묻지 않았다.'
-
-THEMES = {
-    'letter': ('왕실 서신', '아이보리 종이에 와인색 글씨. 편지지처럼 이중 테두리와 가운데 장식선.',
-               '--bg1:#fbf6ec;--bg2:#f2e7d3;--ink:#3b2c27;--sub:#5f4c42;--muted:#76604f;--title:#6e1f30;--gold:#9a7536;'
-               '--frame:#c8a76b;--frame2:rgba(154,117,54,.38);--pill-bg:#6e1f30;--pill-fg:#fbf3e6;--foot:#eee1c8;'
-               '--row-bg:rgba(255,255,255,.6);--row-line:rgba(154,117,54,.25);--shadow:0 8px 22px rgba(0,0,0,.35);'
-               '--hedwig:#8a6516;--piache:#6a4d99;--ruslan:#9b2c3a;--myusa:#a0432a;--daphneya:#2f5b8c'),
-    'velvet': ('와인 벨벳', '어두운 와인색 바탕에 샴페인 금색. 채팅 화면이 어두울 때 눈이 편한 쪽.',
-               '--bg1:#3a1521;--bg2:#230c14;--ink:#f6ece6;--sub:#e3cfc4;--muted:#c3a89d;--title:#f1d3a8;--gold:#e2ba7a;'
-               '--frame:rgba(226,186,122,.6);--frame2:rgba(226,186,122,.28);--pill-bg:#e2ba7a;--pill-fg:#2a0f17;--foot:rgba(0,0,0,.22);'
-               '--row-bg:rgba(255,255,255,.05);--row-line:rgba(226,186,122,.2);--shadow:0 8px 22px rgba(0,0,0,.45);'
-               '--hedwig:#ecc86c;--piache:#cdb9f2;--ruslan:#f4a4ae;--myusa:#f3a283;--daphneya:#a9c6f0'),
-    'blush': ('블러시 파스텔', '연분홍 바탕에 장밋빛 글씨. 웹툰 로판 표지 같은 부드러운 쪽.',
-              '--bg1:#fdf6f6;--bg2:#f6e4e8;--ink:#47313a;--sub:#644d57;--muted:#7d5f6a;--title:#8e3f5c;--gold:#a87f4f;'
-              '--frame:#d9a9b5;--frame2:rgba(201,121,143,.35);--pill-bg:#b9677f;--pill-fg:#fff;--foot:#f3dfe4;'
-              '--row-bg:rgba(255,255,255,.72);--row-line:rgba(201,121,143,.25);--shadow:0 8px 22px rgba(0,0,0,.3);'
-              '--hedwig:#86621a;--piache:#6b4f9e;--ruslan:#a3354a;--myusa:#a24a33;--daphneya:#34619a'),
-}
 
 CSS = """
 @font-face{font-family:'Gowun Batang';src:url(../fonts/GowunBatang-Regular.ttf);font-weight:400}
@@ -45,106 +23,78 @@ html,body{margin:0;background:#1e1d22}
 body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 .chat{color:#d6d3cf;font-size:15px;line-height:1.75;margin:0 0 8px;max-width:640px}
 
-.ks{max-width:640px;color:var(--ink);font-family:'Noto Sans KR',sans-serif;
-  background:linear-gradient(180deg,var(--bg1),var(--bg2));border:1px solid var(--frame);border-radius:6px;
-  box-shadow:inset 0 0 0 4px var(--bg1),inset 0 0 0 5px var(--frame2),var(--shadow);padding:6px}
+.ks{--paper:#faf5ec;--ink:#3b2c27;--sub:#6b584d;--wine:#6e1f30;--gold:#94702f;--rule:#e2d5bf;--edge:#d6c3a0;
+  max-width:640px;background:var(--paper);color:var(--ink);border:1px solid var(--edge);border-radius:6px;
+  padding:16px 20px 15px;font-family:'Noto Sans KR',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .ks *{box-sizing:border-box}
-
-/* 머리: 가운데 정렬 */
-.ks-head{text-align:center;padding:14px 16px 12px}
-.ks-date{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap}
-.ks-iy{font-family:'Gowun Batang',serif;font-weight:700;font-size:21px;color:var(--title);letter-spacing:.3px;line-height:1.2}
-.ks-dday{font-size:12.5px;font-weight:700;color:var(--pill-fg);background:var(--pill-bg);border-radius:999px;padding:2px 9px;line-height:1.4;letter-spacing:.3px}
-.ks-sub{margin-top:6px;font-size:14px;color:var(--sub);line-height:1.4}
-.ks-sub i{font-style:normal;margin:0 7px;color:var(--frame)}
-.ks-ab{display:inline-flex;align-items:baseline;gap:8px;margin-top:10px;padding:4px 14px;border-radius:999px;border:1px solid var(--row-line);background:var(--row-bg);font-size:13.5px}
-.ks-ab b{font-weight:500;color:var(--muted)}
-.ks-ab span{font-family:'Gowun Batang',serif;font-weight:700;font-size:14.5px;color:var(--title)}
-
-/* 장식선: 가운데 마름모 */
-.ks-orn{position:relative;height:1px;margin:2px 22px 0;background:linear-gradient(90deg,transparent,var(--frame) 18%,var(--frame) 82%,transparent)}
-.ks-orn:after{content:'';position:absolute;left:50%;top:-4px;width:7px;height:7px;margin-left:-4px;transform:rotate(45deg);background:var(--bg1);border:1px solid var(--frame)}
-
-/* 인물 */
-.c-hedwig{--c:var(--hedwig)} .c-piache{--c:var(--piache)} .c-ruslan{--c:var(--ruslan)} .c-myusa{--c:var(--myusa)} .c-daphneya{--c:var(--daphneya)}
-.ks-list{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 0;padding:16px 14px 14px}
-.ks-row.on,.ks-solo{order:1;flex:0 0 100%;padding:10px 14px 11px;border-radius:6px;background:var(--row-bg);border:1px solid var(--row-line);border-left:3px solid var(--c)}
-.ks-name{font-family:'Gowun Batang',serif;font-weight:700;font-size:14.5px;color:var(--c);line-height:1.3}
-.ks-thought{margin:4px 0 0;font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.75;color:var(--ink)}
-.ks-row.off{order:2;flex:0 0 auto}
-.ks-row.off .ks-thought{display:none}
-.ks-row.off .ks-name{font-family:'Noto Sans KR',sans-serif;font-weight:500;font-size:14px;color:var(--muted)}
-.ks-row.off ~ .ks-row.off .ks-name:before{content:'·';margin:0 7px;color:var(--frame)}
-.ks-absent-label{order:2;flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted);margin:0 10px 0 2px}
-.ks-list:not(:has(.ks-row.off)) .ks-absent-label{display:none}
-.ks-solo-wrap{padding:16px 14px 14px}
-
-/* 다가올 일 */
-.ks-foot{margin:0 0 0;padding:12px 18px 13px;background:var(--foot);border-top:1px solid var(--row-line);border-radius:0 0 3px 3px}
-.ks-foot-label{font-size:13px;font-weight:700;color:var(--title);margin-bottom:6px}
-.ks-events{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.ks-events li{display:flex;align-items:baseline;gap:10px;font-size:14px;color:var(--ink);line-height:1.5}
-.ks-events b{flex:0 0 40px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
-.ks-events em{font-style:normal;font-size:12px;font-weight:700;color:var(--title);border:1px solid var(--frame);border-radius:999px;padding:0 8px;line-height:1.5}
-
+.ks-date{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ks-iy{font-family:'Gowun Batang',serif;font-weight:700;font-size:20px;color:var(--wine);line-height:1.3}
+.ks-dday{font-size:14px;font-weight:700;color:var(--wine)}
+.ks-meta{margin-top:3px;font-size:14px;color:var(--sub);line-height:1.6}
+.ks-meta i{font-style:normal;margin:0 6px;color:var(--edge)}
+.ks-meta b{font-weight:500;color:var(--wine)}
+.ks-rule{height:1px;background:var(--rule);margin:13px 0}
+.ks-th{display:flex;gap:14px;align-items:baseline}
+.ks-th + .ks-th{margin-top:9px}
+.ks-th-name{flex:0 0 58px;font-size:14px;font-weight:700;color:var(--wine);line-height:1.7}
+.ks-th p{margin:0;flex:1;min-width:0;font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.7;color:var(--ink)}
+.ks-up-label{font-size:13px;font-weight:700;color:var(--sub);margin-bottom:4px}
+.ks-up{list-style:none;margin:0;padding:0}
+.ks-up li{display:flex;gap:14px;font-size:14px;line-height:1.75}
+.ks-up b{flex:0 0 58px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+.ks-up b.today{color:var(--wine)}
 @media (max-width:480px){
-  .ks{padding:5px}
-  .ks-head{padding:12px 10px 11px}
-  .ks-iy{font-size:20px}
-  .ks-list,.ks-solo-wrap{padding:14px 10px 12px}
-  .ks-orn{margin:2px 14px 0}
-  .ks-foot{padding:11px 13px 12px}
+  .ks{padding:14px 15px 13px}
+  .ks-iy{font-size:19px}
+  .ks-th{gap:12px}
+  .ks-th-name,.ks-up b{flex-basis:56px}
 }
 """
 
 
-def head():
-    return (f'<div class="ks-head"><div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
-            f'<div class="ks-sub">{TIME}<i>·</i>{PLACE}</div>'
-            f'<div class="ks-ab"><b>능력</b><span>{ABILITY}</span></div></div><div class="ks-orn"></div>')
+def card(today_mark, thoughts=THOUGHTS):
+    th = ''.join(f'<div class="ks-th"><span class="ks-th-name">{n}</span><p>{t}</p></div>' for n, t in thoughts)
+    th_block = f'<div class="ks-rule"></div>{th}' if thoughts else ''
+    ev = ''
+    for i, (d, t) in enumerate(EVENTS):
+        is_today = today_mark and d == DDAY
+        ev += f'<li><b class="{"today" if is_today else ""}">{"오늘" if is_today else d}</b><span>{t}</span></li>'
+    return (f'<div class="ks"><div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
+            f'<div class="ks-meta">{TIME}<i>·</i>{PLACE}<i>·</i>능력 <b>{ABILITY}</b></div>'
+            f'{th_block}<div class="ks-rule"></div>'
+            f'<div class="ks-up-label">다가올 일</div><ol class="ks-up">{ev}</ol></div>')
 
 
-def foot():
-    items = ''.join(f'<li><b>{d}</b><span>{t}{f" <em>{tag}</em>" if tag else ""}</span></li>' for d, t, tag in EVENTS)
-    return f'<div class="ks-foot"><div class="ks-foot-label">다가올 일</div><ol class="ks-events">{items}</ol></div>'
-
-
-def body5():
-    rows = ''.join(f'<div class="ks-row {"on" if on else "off"} c-{k}"><div class="ks-name">{ko}</div><p class="ks-thought">{t}</p></div>'
-                   for k, ko, on, t in CAST)
-    return f'<div class="ks-list"><span class="ks-absent-label">자리에 없음</span>{rows}</div>'
-
-
-def body1():
-    k, ko, on, t = FOCUS
-    return f'<div class="ks-solo-wrap"><div class="ks-solo c-{k}"><div class="ks-name">{ko}</div><p class="ks-thought">{t}</p></div></div>'
-
-
-for theme, (label, note, vars_) in THEMES.items():
-    for mode, body in (('5', body5), ('1', body1)):
-        html = (f'<!doctype html><meta charset="utf-8"><style>{CSS}.ks{{{vars_}}}</style>'
-                f'<p class="chat">{PROSE}</p><div class="ks">{head()}{body()}{foot()}</div>')
-        open(os.path.join(OUT, f'{theme}_{mode}.html'), 'w', encoding='utf-8').write(html)
+VARIANTS = {
+    'minimal_a': card(False),
+    'minimal_b': card(True),
+    'minimal_one': card(False, THOUGHTS[:1]),
+    'minimal_none': card(False, []),
+}
+for name, html in VARIANTS.items():
+    open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8').write(
+        f'<!doctype html><meta charset="utf-8"><style>{CSS}</style><p class="chat">{PROSE}</p>{html}')
 
 SHEET = """<!doctype html><meta charset="utf-8"><style>
 @font-face{font-family:'Noto Sans KR';src:url(../fonts/NotoSansKR.ttf);font-weight:100 900}
-body{margin:0;background:#121115;color:#e9e4da;font-family:'Noto Sans KR',sans-serif;padding:28px 32px;width:%dpx}
-h1{font-size:22px;margin:0 0 4px} .note{color:#a39d95;font-size:14px;margin:0 0 18px}
+body{margin:0;background:#121115;color:#e9e4da;font-family:'Noto Sans KR',sans-serif;padding:28px 32px;width:1180px}
+h1{font-size:22px;margin:0 0 4px} .note{color:#a39d95;font-size:14px;margin:0 0 18px;line-height:1.6}
 h2{font-size:16px;margin:24px 0 10px;color:#e3c58e}
 .row{display:flex;gap:28px;align-items:flex-start}
 .col{display:flex;flex-direction:column;gap:6px} .col span{font-size:13px;color:#a39d95}
 img{display:block;border-radius:10px;box-shadow:0 0 0 1px #2a2830}
-</style><h1>%s</h1><p class="note">%s</p>%s"""
-
-for theme, (label, note, _) in THEMES.items():
-    blocks = ''.join(f'<h2>{m}</h2><div class="row"><div class="col"><span>PC</span><img src="{theme}_{k}_pc.png" style="width:680px"></div>'
-                     f'<div class="col"><span>모바일</span><img src="{theme}_{k}_m.png" style="width:375px"></div></div>'
-                     for k, m in (('5', '5인 버전'), ('1', '단일 버전')))
-    open(os.path.join(OUT, f'sheet_{theme}.html'), 'w', encoding='utf-8').write(SHEET % (1180, f'{label}', note, blocks))
-
-overview = ''.join(f'<div class="col"><span>{i}. {THEMES[t][0]}</span><img src="{t}_5_m.png" style="width:375px"></div>'
-                   for i, t in enumerate(THEMES, 1))
-open(os.path.join(OUT, 'sheet_overview.html'), 'w', encoding='utf-8').write(
-    SHEET % (1240, '세 가지 방향 한눈에 보기 (모바일 · 5인 버전)', '사진 없이 이름 색과 왼쪽 색 줄로 인물을 구분합니다. 장면에 없는 인물은 아래 한 줄로 모입니다.',
-             f'<div class="row">{overview}</div>'))
-print('built', len(os.listdir(OUT)), 'files')
+</style><h1>최소 장식 시안 (아이보리 · 와인)</h1>
+<p class="note">상자·띠·뱃지·장식선 없이 얇은 테두리와 구분선만. 장면에 있는 인물의 속마음만 나옵니다.<br>
+아래 두 안은 '다가올 일'의 오늘 표시만 다릅니다.</p>
+<h2>A. 오늘 표시 없음</h2><div class="row">
+<div class="col"><span>PC</span><img src="minimal_a_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="minimal_a_m.png" style="width:375px"></div></div>
+<h2>B. 오늘 표시 (D-숫자 자리에 '오늘')</h2><div class="row">
+<div class="col"><span>PC</span><img src="minimal_b_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="minimal_b_m.png" style="width:375px"></div></div>
+<h2>장면에 인물이 한 명일 때 / 아무도 없을 때 (모바일)</h2><div class="row">
+<div class="col"><span>한 명</span><img src="minimal_one_m.png" style="width:375px"></div>
+<div class="col"><span>없음 (속마음 칸이 통째로 빠짐)</span><img src="minimal_none_m.png" style="width:375px"></div></div>
+"""
+open(os.path.join(OUT, 'sheet_minimal.html'), 'w', encoding='utf-8').write(SHEET)
+print('built', sorted(f for f in os.listdir(OUT) if f.startswith(('minimal', 'sheet_minimal'))))
