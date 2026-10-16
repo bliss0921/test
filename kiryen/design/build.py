@@ -1,19 +1,68 @@
-# python3 build.py  →  out/minimal_*.html (시안) + out/sheet_minimal.html (비교판)
+# python3 build.py  →  out/frames/*.svg (테두리 에셋) + out/frame_*.html (시안) + out/sheet_frames.html (비교판)
 # 렌더: python3 render.py
+#
+# 테두리는 '9조각(9-slice)' 이미지다: 모서리 4개는 그대로, 변은 내용 길이에 맞춰 늘어난다.
+# CSS: border-image: url(테두리) 40 fill / 30px stretch  (RisuAI에서는 url('{{raw::에셋이름}}'))
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'out')
-os.makedirs(OUT, exist_ok=True)
+FR = os.path.join(OUT, 'frames')
+os.makedirs(FR, exist_ok=True)
 
 # ---------------------------------------------------------------- 예시 데이터
 DATE, DDAY, TIME, PLACE, ABILITY = 'IY 429. 7.15', 'D-68', '15:00', '기사단 연무장', '시간 정지'
 EVENTS = [('D-68', '하계 무술대회'), ('D-55', '루스란, 다프네야 협력 수락'), ('D-49', '다프네야 → 피아체 접촉')]
-THOUGHTS = [  # 장면에 있는 인물만
+THOUGHTS = [
     ('헤드비히', '…보고만 계실 셈인가. 예전처럼 다른 자를 보러 오신 거라면, 차라리 그렇다고 말씀하시지.'),
     ('루스란', '또 재미있는 구경거리를 찾았군. 이번엔 무슨 꿍꿍이지?'),
 ]
 PROSE = '헤드비히의 시선이 연무장 너머, 황제가 선 자리로 천천히 옮겨 갔다. 아무도 그 눈빛의 의미를 묻지 않았다.'
+
+PAPER, GOLD, WINE = '#faf5ec', '#a8823f', '#6e1f30'
+
+# ---------------------------------------------------------------- 테두리 에셋 (120x120, 모서리 40)
+
+
+def mirror4(corner):
+    """왼쪽 위 모서리 그림을 네 모서리로 복사"""
+    return (f'<g>{corner}</g><g transform="translate(120,0) scale(-1,1)">{corner}</g>'
+            f'<g transform="translate(0,120) scale(1,-1)">{corner}</g><g transform="translate(120,120) scale(-1,-1)">{corner}</g>')
+
+
+def svg(body):
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">{body}</svg>'
+
+
+# 1. 코너 장식: 둥근 모서리 + 안쪽 아치와 작은 마름모
+corner1 = (f'<path d="M40 6 H22 C13 6 6 13 6 22 V40" fill="none" stroke="{GOLD}" stroke-width="1.6"/>'
+           f'<path d="M15 34 C15 23 23 15 34 15" fill="none" stroke="{GOLD}" stroke-width="1.2"/>'
+           f'<circle cx="15" cy="36" r="2" fill="{GOLD}"/><circle cx="36" cy="15" r="2" fill="{GOLD}"/>'
+           f'<rect x="8.8" y="8.8" width="6" height="6" transform="rotate(45 11.8 11.8)" fill="{GOLD}"/>')
+FRAME1 = svg(f'<path d="M22 6 H98 C107 6 114 13 114 22 V98 C114 107 107 114 98 114 H22 C13 114 6 107 6 98 V22 C6 13 13 6 22 6 Z" fill="{PAPER}"/>'
+             f'<path d="M40 6 H80 M40 114 H80 M6 40 V80 M114 40 V80" stroke="{GOLD}" stroke-width="1.3"/>' + mirror4(corner1))
+
+# 2. 왕실 문장: 얇은 이중선 (위 가운데 태양 문장은 HTML 요소로 따로 얹음)
+FRAME2 = svg(f'<rect x="4" y="4" width="112" height="112" rx="3" fill="{PAPER}"/>'
+             f'<rect x="4.6" y="4.6" width="110.8" height="110.8" rx="3" fill="none" stroke="{GOLD}" stroke-width="1.2"/>'
+             f'<rect x="9" y="9" width="102" height="102" rx="1.5" fill="none" stroke="{GOLD}" stroke-width=".7" opacity=".7"/>')
+
+# 3. 모서리 컷: 모서리를 비스듬히 자른 이중선 + 점
+corner3 = (f'<path d="M40 6 H20 L6 20 V40" fill="none" stroke="{GOLD}" stroke-width="1.3"/>'
+           f'<path d="M40 11 H22.5 L11 22.5 V40" fill="none" stroke="{GOLD}" stroke-width=".7" opacity=".75"/>'
+           f'<circle cx="13" cy="13" r="1.6" fill="{GOLD}"/>')
+FRAME3 = svg(f'<path d="M20 6 H100 L114 20 V100 L100 114 H20 L6 100 V20 Z" fill="{PAPER}"/>'
+             f'<path d="M40 6 H80 M40 114 H80 M6 40 V80 M114 40 V80" stroke="{GOLD}" stroke-width="1.3"/>'
+             f'<path d="M40 11 H80 M40 109 H80 M11 40 V80 M109 40 V80" stroke="{GOLD}" stroke-width=".7" opacity=".75"/>' + mirror4(corner3))
+
+SUN = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="28" height="28">'
+       f'<circle cx="14" cy="14" r="12.6" fill="{PAPER}" stroke="{GOLD}" stroke-width="1.1"/>'
+       f'<circle cx="14" cy="14" r="3.6" fill="none" stroke="{GOLD}" stroke-width="1.1"/>'
+       + ''.join(f'<line x1="14" y1="6.2" x2="14" y2="8.4" stroke="{GOLD}" stroke-width="1" stroke-linecap="round" transform="rotate({a} 14 14)"/>' for a in range(0, 360, 45))
+       + '</svg>')
+
+for name, data in (('frame_corner', FRAME1), ('frame_crest', FRAME2), ('frame_cut', FRAME3), ('crest_sun', SUN)):
+    open(os.path.join(FR, f'{name}.svg'), 'w', encoding='utf-8').write(data)
 
 CSS = """
 @font-face{font-family:'Gowun Batang';src:url(../fonts/GowunBatang-Regular.ttf);font-weight:400}
@@ -23,10 +72,13 @@ html,body{margin:0;background:#1e1d22}
 body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 .chat{color:#d6d3cf;font-size:15px;line-height:1.75;margin:0 0 8px;max-width:640px}
 
-.ks{--paper:#faf5ec;--ink:#3b2c27;--sub:#6b584d;--wine:#6e1f30;--gold:#94702f;--rule:#e2d5bf;--edge:#d6c3a0;
-  max-width:640px;background:var(--paper);color:var(--ink);border:1px solid var(--edge);border-radius:6px;
-  padding:16px 20px 15px;font-family:'Noto Sans KR',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.ks{--ink:#3b2c27;--sub:#6b584d;--wine:#6e1f30;--gold:#94702f;--rule:#e2d5bf;--edge:#d6c3a0;
+  position:relative;max-width:640px;color:var(--ink);font-family:'Noto Sans KR',sans-serif;
+  border:30px solid transparent;border-image:var(--frame) 40 fill / 30px stretch;padding:0 6px;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
 .ks *{box-sizing:border-box}
+.ks-crest{position:absolute;left:50%;top:-40.5px;width:28px;height:28px;margin-left:-14px;background:var(--crest) center/contain no-repeat}
+.ks-has-crest{margin-top:14px}
 .ks-date{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .ks-iy{font-family:'Gowun Batang',serif;font-weight:700;font-size:20px;color:var(--wine);line-height:1.3}
 .ks-dday{font-size:14px;font-weight:700;color:var(--wine)}
@@ -42,9 +94,9 @@ body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 .ks-up{list-style:none;margin:0;padding:0}
 .ks-up li{display:flex;gap:14px;font-size:14px;line-height:1.75}
 .ks-up b{flex:0 0 58px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
-.ks-up b.today{color:var(--wine)}
 @media (max-width:480px){
-  .ks{padding:14px 15px 13px}
+  .ks{border-width:24px;border-image-width:24px;padding:0 2px}
+  .ks-crest{top:-35.2px}
   .ks-iy{font-size:19px}
   .ks-th{gap:12px}
   .ks-th-name,.ks-up b{flex-basis:56px}
@@ -52,24 +104,23 @@ body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 """
 
 
-def card(today_mark, thoughts=THOUGHTS):
+def card(frame, crest=False, thoughts=THOUGHTS):
     th = ''.join(f'<div class="ks-th"><span class="ks-th-name">{n}</span><p>{t}</p></div>' for n, t in thoughts)
     th_block = f'<div class="ks-rule"></div>{th}' if thoughts else ''
-    ev = ''
-    for i, (d, t) in enumerate(EVENTS):
-        is_today = today_mark and d == DDAY
-        ev += f'<li><b class="{"today" if is_today else ""}">{"오늘" if is_today else d}</b><span>{t}</span></li>'
-    return (f'<div class="ks"><div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
-            f'<div class="ks-meta">{TIME}<i>·</i>{PLACE}<i>·</i>능력 <b>{ABILITY}</b></div>'
+    ev = ''.join(f'<li><b>{d}</b><span>{t}</span></li>' for d, t in EVENTS)
+    style = f"--frame:url('frames/{frame}.svg')" + (";--crest:url('frames/crest_sun.svg')" if crest else '')
+    return (f'<div class="ks{" ks-has-crest" if crest else ""}" style="{style}">' + ('<div class="ks-crest"></div>' if crest else '')
+            + f'<div class="ks-date"><span class="ks-iy">{DATE}</span><span class="ks-dday">{DDAY}</span></div>'
+            f'<div class="ks-meta">{TIME}<i>·</i>{PLACE}<i>·</i>Ability <b>{ABILITY}</b></div>'
             f'{th_block}<div class="ks-rule"></div>'
             f'<div class="ks-up-label">다가올 일</div><ol class="ks-up">{ev}</ol></div>')
 
 
 VARIANTS = {
-    'minimal_a': card(False),
-    'minimal_b': card(True),
-    'minimal_one': card(False, THOUGHTS[:1]),
-    'minimal_none': card(False, []),
+    'frame_corner': card('frame_corner'),
+    'frame_crest': card('frame_crest', crest=True),
+    'frame_cut': card('frame_cut'),
+    'frame_corner_one': card('frame_corner', thoughts=THOUGHTS[:1]),
 }
 for name, html in VARIANTS.items():
     open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8').write(
@@ -83,18 +134,20 @@ h2{font-size:16px;margin:24px 0 10px;color:#e3c58e}
 .row{display:flex;gap:28px;align-items:flex-start}
 .col{display:flex;flex-direction:column;gap:6px} .col span{font-size:13px;color:#a39d95}
 img{display:block;border-radius:10px;box-shadow:0 0 0 1px #2a2830}
-</style><h1>최소 장식 시안 (아이보리 · 와인)</h1>
-<p class="note">상자·띠·뱃지·장식선 없이 얇은 테두리와 구분선만. 장면에 있는 인물의 속마음만 나옵니다.<br>
-아래 두 안은 '다가올 일'의 오늘 표시만 다릅니다.</p>
-<h2>A. 오늘 표시 없음</h2><div class="row">
-<div class="col"><span>PC</span><img src="minimal_a_pc.png" style="width:680px"></div>
-<div class="col"><span>모바일</span><img src="minimal_a_m.png" style="width:375px"></div></div>
-<h2>B. 오늘 표시 (D-숫자 자리에 '오늘')</h2><div class="row">
-<div class="col"><span>PC</span><img src="minimal_b_pc.png" style="width:680px"></div>
-<div class="col"><span>모바일</span><img src="minimal_b_m.png" style="width:375px"></div></div>
-<h2>장면에 인물이 한 명일 때 / 아무도 없을 때 (모바일)</h2><div class="row">
-<div class="col"><span>한 명</span><img src="minimal_one_m.png" style="width:375px"></div>
-<div class="col"><span>없음 (속마음 칸이 통째로 빠짐)</span><img src="minimal_none_m.png" style="width:375px"></div></div>
+</style><h1>A안 + 로판풍 테두리 세 가지</h1>
+<p class="note">테두리만 그림이고 글자는 전부 HTML이라, 속마음이 몇 명이든·얼마나 길든 테두리가 내용에 맞춰 늘어납니다.<br>
+모서리 장식은 크기가 그대로이고, 변의 선만 늘어나는 방식(9조각 테두리)입니다.</p>
+<h2>1. 코너 장식 — 둥근 모서리 안쪽에 작은 아치와 마름모</h2><div class="row">
+<div class="col"><span>PC</span><img src="frame_corner_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="frame_corner_m.png" style="width:375px"></div></div>
+<h2>2. 왕실 문장 — 얇은 이중선, 위 가운데 태양 문장</h2><div class="row">
+<div class="col"><span>PC</span><img src="frame_crest_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="frame_crest_m.png" style="width:375px"></div></div>
+<h2>3. 모서리 컷 — 모서리를 비스듬히 자른 이중선</h2><div class="row">
+<div class="col"><span>PC</span><img src="frame_cut_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="frame_cut_m.png" style="width:375px"></div></div>
+<h2>참고: 1번 테두리에 속마음이 한 명일 때 (모바일) — 테두리가 내용 높이에 맞춰짐</h2><div class="row">
+<div class="col"><img src="frame_corner_one_m.png" style="width:375px"></div></div>
 """
-open(os.path.join(OUT, 'sheet_minimal.html'), 'w', encoding='utf-8').write(SHEET)
-print('built', sorted(f for f in os.listdir(OUT) if f.startswith(('minimal', 'sheet_minimal'))))
+open(os.path.join(OUT, 'sheet_frames.html'), 'w', encoding='utf-8').write(SHEET)
+print('built', sorted(os.listdir(OUT)))
