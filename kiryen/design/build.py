@@ -91,6 +91,19 @@ body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 .ks-th + .ks-th{margin-top:9px}
 .ks-th-name{flex:0 0 58px;font-size:14px;font-weight:700;color:var(--wine);line-height:1.7}
 .ks-th p{margin:0;flex:1;min-width:0;font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.7;color:var(--ink)}
+/* 배치 1: 이름 위, 속마음 아래 */
+.lay-stack .ks-th{display:block}
+.lay-stack .ks-th + .ks-th{margin-top:12px}
+.lay-stack .ks-th-name{display:block;line-height:1.4;margin-bottom:2px}
+/* 배치 2: 이름을 문장 맨 앞에 붙여 쓰기 (줄바꿈은 왼쪽 끝부터) */
+.ks-runin{margin:0;font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.75;color:var(--ink)}
+.ks-runin + .ks-runin{margin-top:8px}
+.ks-runin b{font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;color:var(--wine);margin-right:9px}
+/* 배치 3: 속마음 먼저, 이름은 오른쪽 아래에 */
+.ks-quote{margin:0}
+.ks-quote + .ks-quote{margin-top:12px}
+.ks-quote p{margin:0;font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.75;color:var(--ink)}
+.ks-quote span{display:block;text-align:right;margin-top:2px;font-size:13.5px;font-weight:700;color:var(--wine)}
 .ks-up-label{font-size:13px;font-weight:700;color:var(--sub);margin-bottom:4px}
 .ks-up{list-style:none;margin:0;padding:0}
 .ks-up li{display:flex;gap:14px;font-size:14px;line-height:1.75}
@@ -105,17 +118,23 @@ body{padding:16px 12px 20px;font-family:'Noto Sans KR',sans-serif}
 """
 
 
-def card(frame, crest=False, thoughts=THOUGHTS, head=None):
+def card(frame, crest=False, thoughts=THOUGHTS, head=None, layout='grid', lang='en'):
     date, dday, time, place, ability = head or (DATE, DDAY, TIME, PLACE, ABILITY)
-    th = ''.join(f'<div class="ks-th"><span class="ks-th-name">{n}</span><p>{t}</p></div>' for n, t in thoughts)
+    lab_ab, lab_up = ('Ability', 'Upcoming') if lang == 'en' else ('능력', '다가올 일')
+    if layout == 'runin':
+        th = ''.join(f'<p class="ks-runin"><b>{n}</b>{t}</p>' for n, t in thoughts)
+    elif layout == 'quote':
+        th = ''.join(f'<div class="ks-quote"><p>{t}</p><span>— {n}</span></div>' for n, t in thoughts)
+    else:
+        th = ''.join(f'<div class="ks-th"><span class="ks-th-name">{n}</span><p>{t}</p></div>' for n, t in thoughts)
     th_block = f'<div class="ks-rule"></div>{th}' if thoughts else ''
-    ev = ''.join(f'<li><b>{d}</b><span>{t}</span></li>' for d, t in EVENTS)
+    ev = ''.join(f'<li><b>{d}</b><span>{t}</span></li>' for d, t in (EVENTS if lang == 'ko' else [('D-68', 'Summer Martial Tournament'), ('D-55', 'Ruslan agrees to work with Daphneya'), ('D-49', 'Daphneya → Piache')]))
     style = f"--frame:url('frames/{frame}.svg')" + (";--crest:url('frames/crest_sun.svg')" if crest else '')
-    return (f'<div class="ks{" ks-has-crest" if crest else ""}" style="{style}">' + ('<div class="ks-crest"></div>' if crest else '')
+    return (f'<div class="ks lay-{layout}{" ks-has-crest" if crest else ""}" style="{style}">' + ('<div class="ks-crest"></div>' if crest else '')
             + f'<div class="ks-date"><span class="ks-iy">{date}</span><span class="ks-dday">{dday}</span></div>'
-            f'<div class="ks-meta">{time}<i>·</i>{place}<i>·</i><span class="ks-ab">Ability <b>{ability}</b></span></div>'
+            f'<div class="ks-meta">{time}<i>·</i>{place}<i>·</i><span class="ks-ab">{lab_ab} <b>{ability}</b></span></div>'
             f'{th_block}<div class="ks-rule"></div>'
-            f'<div class="ks-up-label">Upcoming</div><ol class="ks-up">{ev}</ol></div>')
+            f'<div class="ks-up-label">{lab_up}</div><ol class="ks-up">{ev}</ol></div>')
 
 
 EN_HEAD = ('IY 429. 7.15', 'D-68', '15:00', 'Knights\' Training Grounds', 'Time Stop')
@@ -124,10 +143,10 @@ EN_THOUGHTS = [
     ('Ruslan', 'Found another amusing spectacle, have we? What scheme is it this time?'),
 ]
 VARIANTS = {
-    'final': card('frame_cut'),
-    'final_one': card('frame_cut', thoughts=THOUGHTS[:1]),
-    'final_none': card('frame_cut', thoughts=[]),
-    'final_en': card('frame_cut', thoughts=EN_THOUGHTS, head=EN_HEAD),
+    'lay_stack': card('frame_cut', layout='stack', lang='ko'),
+    'lay_runin': card('frame_cut', layout='runin', lang='ko'),
+    'lay_quote': card('frame_cut', layout='quote', lang='ko'),
+    'lay_runin_en': card('frame_cut', layout='runin', lang='en', thoughts=EN_THOUGHTS, head=EN_HEAD),
 }
 for name, html in VARIANTS.items():
     open(os.path.join(OUT, f'{name}.html'), 'w', encoding='utf-8').write(
@@ -141,15 +160,19 @@ h2{font-size:16px;margin:24px 0 10px;color:#e3c58e}
 .row{display:flex;gap:28px;align-items:flex-start}
 .col{display:flex;flex-direction:column;gap:6px} .col span{font-size:13px;color:#a39d95}
 img{display:block;border-radius:10px;box-shadow:0 0 0 1px #2a2830}
-</style><h1>최종 시안 — 모서리 컷 · 아이보리 · 와인</h1>
-<p class="note">라벨은 영어 단어(Ability, Upcoming) 고정. 장면에 있는 인물의 속마음만 표시하고, 없으면 그 칸이 빠집니다.</p>
-<h2>기본 (장면에 두 명)</h2><div class="row">
-<div class="col"><span>PC</span><img src="final_pc.png" style="width:680px"></div>
-<div class="col"><span>모바일</span><img src="final_m.png" style="width:375px"></div></div>
-<h2>한 명 / 아무도 없음 / 영어 출력 (모바일)</h2><div class="row">
-<div class="col"><span>한 명</span><img src="final_one_m.png" style="width:375px"></div>
-<div class="col"><span>아무도 없음</span><img src="final_none_m.png" style="width:375px"></div>
-<div class="col"><span>영어 출력</span><img src="final_en_m.png" style="width:375px"></div></div>
+</style><h1>이름 · 속마음 배치 세 가지</h1>
+<p class="note">이름 아래 빈 공간이 없도록 바꾼 세 가지입니다. 한국어 설정이면 라벨이 '능력 · 다가올 일', 영어 설정이면 'Ability · Upcoming'.</p>
+<h2>1. 이름 위, 속마음 아래 (줄바꿈)</h2><div class="row">
+<div class="col"><span>PC</span><img src="lay_stack_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="lay_stack_m.png" style="width:375px"></div></div>
+<h2>2. 이름을 문장 맨 앞에 붙여 쓰기 — 줄이 넘어가면 왼쪽 끝부터</h2><div class="row">
+<div class="col"><span>PC</span><img src="lay_runin_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="lay_runin_m.png" style="width:375px"></div></div>
+<h2>3. 속마음 먼저, 이름은 오른쪽 아래 (편지 서명처럼)</h2><div class="row">
+<div class="col"><span>PC</span><img src="lay_quote_pc.png" style="width:680px"></div>
+<div class="col"><span>모바일</span><img src="lay_quote_m.png" style="width:375px"></div></div>
+<h2>참고: 2번을 영어 설정으로 (모바일) — 라벨·원작 이벤트 이름까지 영어</h2><div class="row">
+<div class="col"><img src="lay_runin_en_m.png" style="width:375px"></div></div>
 """
-open(os.path.join(OUT, 'sheet_final.html'), 'w', encoding='utf-8').write(SHEET)
+open(os.path.join(OUT, 'sheet_layout.html'), 'w', encoding='utf-8').write(SHEET)
 print('built', sorted(os.listdir(OUT)))
