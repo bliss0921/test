@@ -25,7 +25,7 @@ function setPermaFree(triggerId)      setBoth(triggerId, "perma", "fm_free") end
 -- 황제의 연인 — 원작 타임라인 (100일 타이머) + 운명의 개입 + 상태창
 --
 -- 모델에게는 기본으로 "지금까지 진행된 일 + WINDOW일 안에 다가온 일"만 보낸다.
--- (원작 줄거리 토글이 '전부'면 앞으로의 일과 결말까지 보낸다.)
+-- (원작 줄거리 토글이 '전부'면 앞으로의 일과 결말까지 보내고, '없음'이면 아무것도 안 보낸다.)
 -- 플레이어에게는 상태창 아래 '다가올 일'로 보여 준다 (화면 전용, 모델에는 안 감).
 -- 상태를 변수에 저장하지 않고 매번 채팅 기록(마지막 STATUS 날짜, TIMER 주석)에서
 -- 다시 계산하므로 리롤·메시지 삭제·분기를 해도 꼬이지 않는다.
@@ -76,9 +76,13 @@ local function fateNeed(id)
     return 2
 end
 
--- kc_plot: 0 다가올 때만 / 1 전부 (모델이 앞으로의 줄거리와 결말까지 안다). 안 고르면 다가올 때만
-local function fullPlot(id)
-    return toggle(id, "kc_plot") == "1"
+-- kc_plot: 0 다가올 때만 / 1 전부 (모델이 앞으로의 줄거리와 결말까지 안다) / 2 없음 (원작 사건 없이).
+-- '없음'은 빙의가 '다른 인물'·'빙의 없음'일 때만. 카르엔야 빙의는 100일 파멸이 전제라 '다가올 때만'으로 동작. 안 고르면 다가올 때만
+local function plotMode(id)
+    local p = toggle(id, "kc_plot")
+    if p == "1" then return "full" end
+    if p == "2" and scenario(id) ~= "0" then return "off" end
+    return "window"
 end
 
 -- day: D-숫자, date: M.DD
@@ -349,7 +353,7 @@ local function field(s)
     return s
 end
 
--- status: "[IY: ... ]" 한 줄 / st: 이 메시지까지의 타임라인 상태
+-- status: "[IY: ... ]" 한 줄 / st: 이 메시지까지의 타임라인 상태 (원작 사건 없음이면 nil: D-day·다가올 일 없음)
 local function statusCard(status, st, en)
     local inner = status:match("^%[IY:(.*)%]$") or ""
     local head, rest = inner:match("^(.-)||(.*)$")
@@ -360,7 +364,7 @@ local function statusCard(status, st, en)
 
     local date = trim((f[1] or ""):gsub("%(.-%)", ""))
     if date == "" then date = "?" end
-    local left = daysLeft(status)
+    local left = st and daysLeft(status)
     local dday = ""
     if left and left > 0 then dday = "D-" .. left elseif left == 0 then dday = "D-Day" end
 
@@ -413,13 +417,15 @@ end
 listenEdit("editRequest", function(id, value, meta)
     local history = getFullChat(id) or {}
     local left = currentDays(history)
+    local mode = plotMode(id)
+    if mode == "off" then return value end
     local st = timelineState(id, #history, history, fateNeed(id))
 
     local at = #value + 1
     for i = #value, 1, -1 do
         if value[i].role == "user" then at = i; break end
     end
-    table.insert(value, at, { role = "system", content = cbs(worldNote(left, st, scenario(id), fullPlot(id))) })
+    table.insert(value, at, { role = "system", content = cbs(worldNote(left, st, scenario(id), mode == "full")) })
     return value
 end)
 
@@ -427,7 +433,7 @@ end)
 listenEdit("editDisplay", function(id, value, meta)
     if type(value) ~= "string" or not value:find("[IY:", 1, true) then return value end
     local index = meta and tonumber(meta.index)
-    local st = timelineState(id, index and index + 1 or 0, nil, fateNeed(id))
+    local st = plotMode(id) ~= "off" and timelineState(id, index and index + 1 or 0, nil, fateNeed(id)) or nil
     local en = isEnglish(id)
     return (value:gsub("%[IY:[^%]\n]*%]", function(status)
         return "\n\n" .. statusCard(status, st, en) .. "\n\n"

@@ -136,6 +136,25 @@ for lang in VALS['kc_language']:
     check(('Hedwig | So Your Majesty' in st and '헤드비히' not in st and 'Undisclosed.' in st) if en
           else ('헤드비히 | …보고만' in st and 'Hedwig |' not in st and '미공개.' in st), f'status lore language {lang}')
 
+# ---- 원작 줄거리 '없음' (kc_plot 2): 다른 인물·빙의 없음일 때만 사건 관련 문구가 빠짐
+if any('toggle_kc_plot' in c for c in lore.values()):
+    for plot, scen, lang in itertools.product(['null', '0', '1', '2'], VALS['kc_scenario'], VALS['kc_language']):
+        tg = {'kc_plot': plot, 'kc_scenario': scen, 'kc_language': lang}
+        off = plot == '2' and scen in ('1', '2')
+        st = R(lore['상태창'], tg)
+        check('{{' not in st.replace('{{user}}', '') and ('(D-' in st) != off and ('IY 429. 6.13 (D-100)' in st) != off, f'status lore D-count {tg}')
+        check(st.count('[IY:') == 4 and 'FORMAT' in st and 'EXAMPLES' in st, f'status lore complete {tg}')
+        oth = R(lore['유저빙의=다른사람'], tg)
+        check(('One hundred days' in oth) == (scen == '1' and plot != '2'), f'other premise countdown {tg}')
+        nov = R(lore['원작소설'], tg)
+        check(('100-day countdown' in nov) == (scen in ('null', '0') or (scen == '1' and plot != '2')), f'novel countdown mention {tg}')
+        check(("D-100 until the novel's ruin" in nov) == (scen in ('null', '0') or (scen == '1' and plot != '2')), f'novel D-100 line {tg}')
+        check(('The Novel and This World' in nov) == (scen != '2'), f'novel frame kept {tg}')
+        for f in ('null', '0', '1', '2'):
+            fl = R(lore[fate_lore[0]], {**tg, 'kc_fate': f})
+            check(bool(fl.strip()) == (f != '2' and not off), f'fate lore {tg} fate={f}')
+        n += 1
+
 # ---- 요청 정리 정규식
 srm = next(r for r in m['regex'] if r['comment'] == 'Status 리퀘제거')
 import subprocess

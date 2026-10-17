@@ -5,8 +5,8 @@ kc_language=언어=select=한국어,English
 kc_scenario=빙의=select=카르엔야에 빙의,다른 인물에 빙의,빙의 없음
 kc_fate=운명의 개입=select=보통(2번),강하게(3번),끄기
 =켜면 막은 사건이 다른 길로 다시 시도됨. 2번(강하게는 3번) 막아야 진짜 막힘=caption
-kc_plot=원작 줄거리=select=다가올 때만,전부
-=전부: AI도 앞으로의 줄거리와 결말을 알고 씀=caption
+kc_plot=원작 줄거리=select=다가올 때만,전부,없음
+=전부: AI도 결말까지 알고 씀 / 없음: 원작 사건 없이 자유롭게 (카르엔야 빙의일 땐 다가올 때만)=caption
 ==groupEnd
 =인물 성별=group
 kc_g_karenya=카르엔야=select=남,여

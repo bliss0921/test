@@ -216,6 +216,21 @@ set_chat([("char", "<!-- TIMER: E2 blocked -->\n<!-- TIMER: E5 blocked -->\n<!--
 n = request()[2][1]
 check('[E14]' in n.split('Stopped by')[1] and '[E15]' in n.split('Stopped by')[1] and 'Still ahead' in n, 'plot full: blocked rebellion and ending stay stopped')
 
+# ---- 원작 줄거리 '없음' (다른 인물·빙의 없음일 때만)
+set_chat([("char", LATER), ("user", "go")])
+for scen, off in (('1', True), ('2', True), ('0', False), ('null', False)):
+    tg = {'kc_plot': '2'}
+    if scen != 'null': tg['kc_scenario'] = scen
+    toggles(**tg)
+    msgs = request()
+    has_note = any('World State' in c for r, c in msgs)
+    check(has_note != off, f'plot none, scenario {scen}: World State sent = {has_note}')
+    h = display(LATER.replace('c ', 'c\n') if False else "[IY: 429. 7.10 (D-73) | 15:00 | 연무장 | 시간 정지 || 헤드비히 | 흠.]", 0)
+    check(('ks-dday' not in h and 'ks-up' not in h) if off else ('D-73' in h and 'ks-up' in h), f'plot none, scenario {scen}: card D-day/upcoming hidden = {off}')
+    check('<b>헤드비히</b>흠.' in h and '연무장' in h, f'plot none, scenario {scen}: rest of card kept')
+toggles(kc_plot='2', kc_scenario='1')
+check(len(request()) == 4, 'plot none: request untouched (4 messages)')
+
 # perma buttons
 G.setPermaFree("id"); check(G.VARS['perma'] == 'fm_free', 'setPermaFree')
 G.setPermaKarenya("id"); check(G.VARS['perma'] == 'fm_karenya', 'setPermaKarenya')
