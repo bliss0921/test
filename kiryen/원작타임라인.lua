@@ -105,7 +105,7 @@ local EVENTS = {
       side = "Ruslan, with the surviving Mage Kingdom rebels",
       plot = "Ruslan agrees to work with Daphneya." },
     { id = "E5", day = 49, date = "8.03", title = "다프네야 → 피아체 접촉", title_en = "Daphneya → Piache", knows = "Daphneya, Piache", needs = {"E0"},
-      plot = "A handwritten letter from Daphneya reaches Piache: \"I hope we can meet again.\" It is the first direct message from Daphneya in seven years." },
+      plot = "A handwritten letter from Daphneya reaches Piache: \"I hope we can meet again.\" It is the first direct message from Daphneya in six years." },
     { id = "E6", day = 42, date = "8.10", title = "솔카 축일", title_en = "Feast of Solka",
       plot = "Feast Day of the Sun God Solka. A rite is held at the imperial shrine; Karenya, Piache, and Hedwig attend." },
     { id = "E7", day = 38, date = "8.13", title = "피아체, 다프네야에게 답장", title_en = "Piache replies to Daphneya", knows = "Daphneya, Piache", needs = {"E5"},
