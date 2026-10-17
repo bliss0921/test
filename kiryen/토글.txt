@@ -1,0 +1,30 @@
+=로판폭군=divider
+=기본 설정=group
+kc_language=언어=select=한국어,English
+=퍼메 디데이 루아 언어 설정=caption
+kc_scenario=빙의=select=카르엔야에 빙의,다른 인물에 빙의,빙의 없음
+kc_fate=운명의 개입=select=보통(2번),강하게(3번),끄기
+=켜면 막은 사건이 다른 길로 다시 시도됨. 2번(강하게는 3번) 막아야 진짜 막힘=caption
+kc_plot=원작 줄거리=select=다가올 때만,전부
+=전부: AI도 앞으로의 줄거리와 결말을 알고 씀=caption
+==groupEnd
+=인물 성별=group
+kc_g_karenya=카르엔야=select=남,여
+kc_g_hedwig=헤드비히=select=남,여
+kc_g_piache=피아체=select=남,여
+kc_g_ruslan=루스란=select=남,여
+kc_g_myusa=뮤사=select=남,여
+kc_g_daphneya=다프네야=select=남,여
+kc_g_runian=루니안=select=남,여
+==groupEnd
+=인물 프로필=group
+=리스트만은 npc리스트로 남음. 상세여도 키워드 활성화 방식임=caption
+kc_p_karenya=카르엔야=select=상세,리스트만
+=NPC 일때(유저가 다른인물일 때) 들어가는 디스크립션=caption
+kc_p_hedwig=헤드비히=select=상세,리스트만
+kc_p_piache=피아체=select=상세,리스트만
+kc_p_ruslan=루스란=select=상세,리스트만
+kc_p_myusa=뮤사=select=상세,리스트만
+kc_p_daphneya=다프네야=select=상세,리스트만
+kc_p_runian=루니안=select=상세,리스트만
+==groupEnd

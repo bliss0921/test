@@ -15,6 +15,11 @@ data, m = card['data'], mod['module']
 risu = data['extensions']['risuai']
 defaults = dict(l.split('=', 1) for l in risu['defaultVariables'].splitlines() if '=' in l)
 lore = {l['comment']: l['content'] for l in m['lorebook']}
+ALIAS = {'Status': '상태창', '♂️오리지널카르엔야': '♂️카르엔야(NPC 버전)', '♀️오리지널카르엔야': '♀️카르엔야(NPC 버전)'}
+for old, new in ALIAS.items():
+    if new not in lore and old in lore: lore[new] = lore[old]
+POSSESSION = [k for k in lore if k.startswith('빙의상태 카르엔야 설정')]   # 공식 외모 / 외모 커스텀
+assert POSSESSION, 'no possession settings lorebook'
 fails = []
 
 
@@ -76,7 +81,7 @@ for x, orig in PEOPLE.items():
         female = (g == '1') or (g == 'null' and orig == 'f')
         detail = p != '1'
         if x == 'karenya':
-            names = ('♂️오리지널카르엔야', '♀️오리지널카르엔야')
+            names = ('♂️카르엔야(NPC 버전)', '♀️카르엔야(NPC 버전)')
             other = scen in ('1', '2')
         else:
             names = (f'♂️{[k for k in lore if k.endswith(f"({CAP[x]})") and k.startswith("♂")][0][2:]}',
@@ -107,17 +112,25 @@ for scen in VALS['kc_scenario']:
     tg = {'kc_scenario': scen}
     k0 = scen in ('null', '0')
     check(bool(R(lore['유저빙의=카르엔야'], tg).strip()) == k0, f'premise karenya {scen}')
-    check(bool(R(lore['빙의상태 카르엔야 설정'], tg).strip()) == k0, f'possession settings {scen}')
+    for k in POSSESSION:
+        check(bool(R(lore[k], tg).strip()) == k0, f'possession settings {k} {scen}')
     check(bool(R(lore['유저빙의=다른사람'], tg).strip()) == (scen == '1'), f'premise other {scen}')
     check(not any(k for k in lore if '빙의없음' in k), 'no native premise lorebook (빙의 없음은 페르소나 그대로)')
     nov = R(lore['원작소설'], tg)
     check(('The Novel and This World' in nov) == (scen != '2') and ('novel' in nov.lower()) == (scen != '2'), f'novel frame {scen}')
     check('### World History' in nov and 'IY 416' in nov and 'IY 429, June 13 — The story begins.' in nov, f'history kept {scen}')
     n += 1
-for f, on in (('null', True), ('0', True), ('1', False)):
-    check(bool(R(lore['운명의개입(나중에채워)'], {'kc_fate': f}).strip()) == on, f'fate {f}')
+# 운명의 개입: 0 보통 / 1 강하게 / 2 끄기 (안 고르면 보통)
+fate_lore = [k for k, c in lore.items() if 'kc_fate' in c]
+check(len(fate_lore) == 1, f'one fate lorebook {fate_lore}')
+for f, on in (('null', True), ('0', True), ('1', True), ('2', False)):
+    check(bool(R(lore[fate_lore[0]], {'kc_fate': f}).strip()) == on, f'fate {f}')
+# 키가 비어 있는데 상시 활성도 꺼진 항목은 절대 안 켜진다
+never = [l['comment'] for l in m['lorebook'] if l.get('mode') != 'folder' and not l['key'].strip() and not l.get('alwaysActive')]
+print('never active (empty key, not always):', never)
+check('상태창' not in never, '상태창 lorebook can activate')
 for lang in VALS['kc_language']:
-    st = R(lore['Status'], {'kc_language': lang})
+    st = R(lore['상태창'], {'kc_language': lang})
     en = lang == '1'
     check('{{' not in st.replace('{{user}}', ''), 'status lore clean')
     check(('Hedwig | So Your Majesty' in st and '헤드비히' not in st and 'Undisclosed.' in st) if en
@@ -143,7 +156,7 @@ for bad in ('cv_', 'getvar::lang', 'getvar::scenario', 'getvar::difficulty', 'hg
             'setLang', 'setScenario', 'setDifficulty', 'onButtonClick', 'UPCOMING:'):
     check(bad not in dump, f'leftover {bad}')
 defined = set(re.findall(r'^(kc_\w+)=', risu['toggles'], re.M))
-used = set(re.findall(r'\b(kc_(?:language|scenario|fate|g_\w+?|p_\w+?))(?=::|\}|\W)', dump)) | set(re.findall(r'toggle_(kc_\w+)', dump))
+used = set(re.findall(r'\b(kc_[a-z]+(?:_[a-z]+)?)\b', dump)) | set(re.findall(r'toggle_(kc_\w+)', dump))
 check(used <= defined, f'undefined toggles {used - defined}')
 check(defined - used == set(), f'unused toggles {defined - used}')
 code = m['trigger'][0]['effect'][0]['code']
@@ -151,7 +164,7 @@ funcs = set(re.findall(r'^function (\w+)\(', code, re.M))
 for t in set(re.findall(r'risu-trigger="(\w+)"', dump)):
     check(t in funcs, f'missing trigger function {t}')
 check(risu['toggles'].startswith('=로판폭군=divider\n') and risu['toggles'].endswith('==groupEnd'), 'toggle text')
-check(defaults == {'perma': 'fm_karenya'}, 'defaults')
+check(defaults in ({}, {'perma': 'fm_karenya'}), f'defaults {defaults}')  # perma 는 비어 있어도 카르엔야 퍼메로 동작
 for e, l in zip(data['character_book']['entries'], m['lorebook']):
     check(e['content'] == l['content'] and e['comment'] == l['comment'], f'card/module lore mismatch {l["comment"]}')
 bg = risu['backgroundHTML']

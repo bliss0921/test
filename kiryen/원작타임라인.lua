@@ -1,22 +1,53 @@
+-- ========================================
+-- Rofan Lua: Perma buttons + 원작 타임라인 + 상태창
+-- ========================================
+-- 언어 · 빙의 · 운명의 개입 · 성별 · 프로필은 사이드바의 커스텀 토글(kc_...)에서 고른다.
+-- 토글 값은 고른 선택지 번호다 (첫 번째 0, 두 번째 1, 세 번째 2). 한 번도 안 고르면 "null".
+-- Perma: 퍼메 설정 (첫 메시지 버튼)
+-- ========================================
+
+-- ================================================
+-- HELPERS: state + chatvar
+-- ================================================
+local function setBoth(triggerId, key, value)
+  setState(triggerId, key, value)
+  setChatVar(triggerId, key, tostring(value))
+end
+
+-- ================================================
+-- PERMA BUTTONS (퍼메 설정)
+-- perma = "fm_karenya" / "fm_free"  (처음 값은 캐릭터 기본 변수의 perma=fm_karenya)
+-- ================================================
+function setPermaKarenya(triggerId)    setBoth(triggerId, "perma", "fm_karenya") end
+function setPermaFree(triggerId)      setBoth(triggerId, "perma", "fm_free") end
+
 -- =========================================================
--- 황제의 연인 — 원작 타임라인 (100일 타이머) + 상태창
+-- 황제의 연인 — 원작 타임라인 (100일 타이머) + 운명의 개입 + 상태창
 --
--- 모델에게는 "지금까지 진행된 일 + WINDOW일 안에 다가온 일"만 보낸다.
+-- 모델에게는 기본으로 "지금까지 진행된 일 + WINDOW일 안에 다가온 일"만 보낸다.
+-- (원작 줄거리 토글이 '전부'면 앞으로의 일과 결말까지 보낸다.)
 -- 플레이어에게는 상태창 아래 '다가올 일'로 보여 준다 (화면 전용, 모델에는 안 감).
 -- 상태를 변수에 저장하지 않고 매번 채팅 기록(마지막 STATUS 날짜, TIMER 주석)에서
 -- 다시 계산하므로 리롤·메시지 삭제·분기를 해도 꼬이지 않는다.
 -- listenEdit만 쓰므로 low level access가 필요 없다.
 --
--- 모델이 쓰는 STATUS 줄 (로어북 Status 참고):
+-- 모델이 쓰는 STATUS 줄 (로어북 상태창 참고):
 --   [IY: 429. 7.15 (D-68) | 15:00 | 기사단 연무장 | 시간 정지 || 헤드비히 | 속마음 || 루스란 | 속마음]
 -- 화면에서는 이 줄을 상태창 카드(HTML)로 바꿔 그린다. 카드 모양은 배경 HTML의 .ks... CSS.
+--
+-- 운명의 개입: 유저가 사건을 막으면 모델이 <!-- TIMER: E5 blocked --> 를 남긴다.
+-- 토글이 켜져 있으면 표시가 2번(강하게는 3번) 쌓여야 진짜 막힌다. 그 전까지는
+-- REBOUND_DAYS일 안에 같은 결과가 다른 길로 다시 시도된다 (기한이 지나면 결국 일어난 일로 친다).
 -- =========================================================
 
 -- 이벤트 며칠 전부터 모델에게 알려 줄지
 local WINDOW = 7
 
--- 상태창 '다가올 일'에 보여 줄 개수
+-- 상태창 '다가올 일'에 보여 줄 개수 (운명이 되돌리는 중인 일은 이것과 따로 맨 위에 붙는다)
 local UPCOMING_COUNT = 3
+
+-- 운명의 개입: 막힌 날(그 사건 날짜가 더 늦으면 사건 날짜)부터 며칠 안에 다시 시도되는지
+local REBOUND_DAYS = 5
 
 -- 커스텀 토글 값 (고른 선택지 번호. 안 골랐으면 "null")
 local function toggle(id, key)
@@ -35,6 +66,19 @@ local function scenario(id)
     local s = toggle(id, "kc_scenario")
     if s == "1" or s == "2" then return s end
     return "0"
+end
+
+-- kc_fate: 0 보통(2번 막아야 막힘) / 1 강하게(3번) / 2 끄기(1번에 막힘). 안 고르면 보통
+local function fateNeed(id)
+    local f = toggle(id, "kc_fate")
+    if f == "2" then return 1 end
+    if f == "1" then return 3 end
+    return 2
+end
+
+-- kc_plot: 0 다가올 때만 / 1 전부 (모델이 앞으로의 줄거리와 결말까지 안다). 안 고르면 다가올 때만
+local function fullPlot(id)
+    return toggle(id, "kc_plot") == "1"
 end
 
 -- day: D-숫자, date: M.DD
@@ -110,14 +154,18 @@ end
 local MARK = "<!%-%-%s*TIMER:%s*(E%d+)%s+blocked%s*%-%->"
 local cache = { key = nil, marks = {} }
 
--- 채팅 전체의 TIMER 주석 위치. 화면 렌더마다 채팅 전체를 다시 읽지 않도록 캐시한다.
+-- 채팅 전체의 TIMER 주석: 몇 번째 메시지인지 + 그 메시지의 D-남은 날.
+-- 보내기 직전(history를 넘길 때)에는 항상 새로 센다. 화면 렌더 때는 채팅 전체를 매번 읽지 않도록
+-- 캐시를 쓴다 (중간 메시지를 고친 것은 다음 전송이나 새 메시지 때 화면에 반영된다).
 local function timerMarks(id, history)
     local key = getChatLength(id) .. "\0" .. getChatData(id, 0) .. "\0" .. getChatData(id, -1)
-    if cache.key ~= key then
-        local marks = {}
+    if history or cache.key ~= key then
+        local marks, lastLeft = {}, nil
         for i, msg in ipairs(history or getFullChat(id) or {}) do
-            for eid in tostring(msg.data or ""):gmatch(MARK) do
-                marks[#marks + 1] = { index = i, id = eid }
+            local data = tostring(msg.data or "")
+            lastLeft = daysLeft(data) or lastLeft
+            for eid in data:gmatch(MARK) do
+                marks[#marks + 1] = { index = i, id = eid, left = lastLeft }
             end
         end
         cache = { key = key, marks = marks }
@@ -125,17 +173,23 @@ local function timerMarks(id, history)
     return cache.marks
 end
 
--- lastIndex번째 메시지까지의 TIMER 주석 + 선행 조건이 막혀 연쇄로 막힌 이벤트
-local function blockedUpTo(id, lastIndex, history)
-    local marked = {}
+-- lastIndex번째 메시지까지의 상태
+--   st.blocked[id]  : 진짜 막힘 (표시가 need번 이상, 또는 선행 조건이 막혀 연쇄로)
+--   st.count[id]    : 막힘 표시 개수
+--   st.markLeft[id] : 마지막 막힘 표시가 있던 메시지의 D-남은 날
+local function timelineState(id, lastIndex, history, need)
+    local count, markLeft = {}, {}
     for _, m in ipairs(timerMarks(id, history)) do
-        if m.index <= lastIndex then marked[m.id] = true end
+        if m.index <= lastIndex then
+            count[m.id] = (count[m.id] or 0) + 1
+            markLeft[m.id] = m.left
+        end
     end
     local blocked = {}
     for _, e in ipairs(EVENTS) do
-        local b = marked[e.id] == true
-        for _, need in ipairs(e.needs or {}) do
-            if blocked[need] then b = true end
+        local b = (count[e.id] or 0) >= need
+        for _, n in ipairs(e.needs or {}) do
+            if blocked[n] then b = true end
         end
         if e.any then
             local alive = false
@@ -146,7 +200,7 @@ local function blockedUpTo(id, lastIndex, history)
         end
         blocked[e.id] = b
     end
-    return blocked
+    return { blocked = blocked, count = count, markLeft = markLeft, need = need }
 end
 
 local function isPast(e, left)
@@ -154,13 +208,34 @@ local function isPast(e, left)
     return e.ongoing or e.day > left
 end
 
-local function describe(e, blocked)
+-- 운명이 다시 시도하는 기한 (D-숫자). 막힌 날과 원래 날짜 중 늦은 쪽에서 REBOUND_DAYS일 뒤
+local function reboundBy(e, st)
+    local due = st.markLeft[e.id] or e.day or 0
+    if e.day and e.day < due then due = e.day end
+    return due - REBOUND_DAYS
+end
+
+-- 한 번 이상 막혔지만 아직 진짜 막히지 않았고, 다시 시도하는 기한 안이면 "운명이 되돌리는 중"
+local function rebounding(e, left, st)
+    return (st.count[e.id] or 0) > 0 and not st.blocked[e.id] and left >= reboundBy(e, st)
+end
+
+-- D-숫자 → "M.DD" (IY 429 안에서만, 밖이면 nil)
+local function dateOf(left)
+    local doy = RUIN_DAY - left
+    if doy < 1 or doy > 365 then return nil end
+    for m = 12, 1, -1 do
+        if doy > MONTH_START[m] then return m .. "." .. string.format("%02d", doy - MONTH_START[m]) end
+    end
+end
+
+local function describe(e, st)
     local when = e.ongoing and "ongoing" or e.after and "after D-Day" or ("D-" .. e.day .. " (" .. e.date .. ")")
     local text = "- [" .. e.id .. "] " .. when .. " " .. e.title_en .. ": " .. e.plot
     if e.any then
         local sides = {}
         for _, other in ipairs(EVENTS) do
-            if other.side and not blocked[other.id] then sides[#sides + 1] = other.side end
+            if other.side and not st.blocked[other.id] then sides[#sides + 1] = other.side end
         end
         text = text .. " Factions still in: " .. table.concat(sides, "; ") .. ". Factions that dropped out take no part."
     end
@@ -168,22 +243,39 @@ local function describe(e, blocked)
     return text
 end
 
+local function describeRebound(e, st)
+    local by = reboundBy(e, st)
+    local date = dateOf(by)
+    return "- [" .. e.id .. "] " .. e.title_en .. ": thwarted by {{user}} " .. st.count[e.id] .. " of the " .. st.need
+        .. " times it takes to stop it for good. By " .. (date and (date .. " ") or "") .. "(D-" .. by .. ") the same outcome is attempted again through a new route."
+        .. " What it aims at: " .. e.plot .. (e.knows and (" Secret, known only to: " .. e.knows .. ".") or "")
+end
+
 -- scen: 빙의 토글. "2"(빙의 없음)면 {{user}}가 원작을 모르므로 '독자의 기억' 문구를 뺀다
-local function worldNote(left, blocked, scen)
-    local past, stopped, soon = {}, {}, {}
+-- full: 원작 줄거리 '전부'
+local function worldNote(left, st, scen, full)
+    local past, stopped, fated, soon = {}, {}, {}, {}
     for _, e in ipairs(EVENTS) do
-        if blocked[e.id] then
+        if st.blocked[e.id] then
             stopped[#stopped + 1] = "- [" .. e.id .. "] " .. e.title_en
-        elseif isPast(e, left) then
-            past[#past + 1] = describe(e, blocked)
-        elseif e.day and left - e.day <= WINDOW then
-            soon[#soon + 1] = describe(e, blocked)
+        elseif rebounding(e, left, st) then
+            fated[#fated + 1] = describeRebound(e, st)
+        elseif isPast(e, left) or (st.count[e.id] or 0) > 0 then
+            local text = describe(e, st)
+            if (st.count[e.id] or 0) > 0 then
+                text = text .. " {{user}} interfered, but it came about anyway by another route."
+            end
+            past[#past + 1] = text
+        elseif full or (e.day and left - e.day <= WINDOW) then
+            soon[#soon + 1] = describe(e, st)
         end
     end
 
-    local soonTitle = "Approaching within " .. WINDOW .. " days (the novel's course, which {{user}} remembers as a reader):"
-    if scen == "2" then
-        soonTitle = "Approaching within " .. WINDOW .. " days (the course events take while their causes stand):"
+    local course = scen == "2" and "the course events take while their causes stand"
+        or "the novel's course, which {{user}} remembers as a reader"
+    local soonTitle = "Approaching within " .. WINDOW .. " days (" .. course .. "):"
+    if full then
+        soonTitle = "Still ahead, to the end (" .. course .. "; each comes only if its causes still stand):"
     end
 
     local lines = {
@@ -198,23 +290,38 @@ local function worldNote(left, blocked, scen)
     end
     section("Already set in motion (true unless the chat history shows otherwise):", past)
     section("Stopped by {{user}}'s actions (these threads no longer advance; nothing that depends on them can happen):", stopped)
+    section("Fate pushes back (the world bends toward its set course; see Fate's Pull):", fated)
     section(soonTitle, soon)
     lines[#lines + 1] = ""
     lines[#lines + 1] = "Rules:"
     lines[#lines + 1] = "- An approaching event unfolds on its date only if its causes still stand in this story. {{user}}'s earlier actions may delay or change it."
     lines[#lines + 1] = "- Secret events happen off-screen and leave no visible trace unless {{user}} is present or deliberately investigates."
     lines[#lines + 1] = "- Each character acts only on what that character personally knows. \"Known only to\" is strict, and no one foresees the future."
-    lines[#lines + 1] = "- Do not foreshadow events that are not listed here."
-    lines[#lines + 1] = "- If {{user}}'s actions have made a listed event or ongoing scheme impossible, write <!-- TIMER: ID blocked --> on its own line right before the STATUS line. Never write it otherwise."
+    if full then
+        lines[#lines + 1] = "- You know the whole course. Let it shape tension and quiet foreshadowing, but never reveal it and never bring an event before its date."
+    else
+        lines[#lines + 1] = "- Do not foreshadow events that are not listed here."
+    end
+    if #fated > 0 then
+        lines[#lines + 1] = "- An event under \"Fate pushes back\" is attempted again by its deadline through a new, plausible route, never the one {{user}} closed. If {{user}} thwarts that attempt too, mark it again."
+    end
+    lines[#lines + 1] = "- If {{user}}'s actions have made a listed event or ongoing scheme impossible, write <!-- TIMER: ID blocked --> on its own line right before the STATUS line, once, in the response where it happens. Never write it otherwise."
     return table.concat(lines, "\n")
 end
 
--- 화면 '다가올 일': { {"D-82", "하계 하지 축연"}, ... }
-local function upcoming(left, blocked, en)
+-- 화면 '다가올 일': { {"D-82", "하계 하지 축연"}, ... }. 운명이 되돌리는 중인 일은 맨 위에 "곧"으로
+local function upcoming(left, st, en)
     local items = {}
     for _, e in ipairs(EVENTS) do
-        if #items < UPCOMING_COUNT and e.day and not isPast(e, left) and not blocked[e.id] then
+        if rebounding(e, left, st) and not e.after then
+            items[#items + 1] = { en and "Soon" or "곧", (en and e.title_en or e.title) .. (en and " (another way)" or " (다른 길로)") }
+        end
+    end
+    local n = 0
+    for _, e in ipairs(EVENTS) do
+        if n < UPCOMING_COUNT and e.day and not isPast(e, left) and not st.blocked[e.id] and (st.count[e.id] or 0) == 0 then
             items[#items + 1] = { e.day == 0 and "D-Day" or ("D-" .. e.day), en and e.title_en or e.title }
+            n = n + 1
         end
     end
     return items
@@ -242,8 +349,8 @@ local function field(s)
     return s
 end
 
--- status: "[IY: ... ]" 한 줄 / blocked: 이 메시지까지 막힌 이벤트
-local function statusCard(status, blocked, en)
+-- status: "[IY: ... ]" 한 줄 / st: 이 메시지까지의 타임라인 상태
+local function statusCard(status, st, en)
     local inner = status:match("^%[IY:(.*)%]$") or ""
     local head, rest = inner:match("^(.-)||(.*)$")
     if not head then head, rest = inner, "" end
@@ -289,7 +396,7 @@ local function statusCard(status, blocked, en)
 
     -- 다가올 일: 날짜를 알 때만
     if left then
-        local items = upcoming(left, blocked, en)
+        local items = upcoming(left, st, en)
         if #items > 0 then
             html[#html + 1] = '<div class="ks-rule"></div><div class="ks-up-label">' .. (en and "Upcoming" or "다가올 일") .. '</div><ol class="ks-up">'
             for _, it in ipairs(items) do
@@ -306,13 +413,13 @@ end
 listenEdit("editRequest", function(id, value, meta)
     local history = getFullChat(id) or {}
     local left = currentDays(history)
-    local blocked = blockedUpTo(id, #history, history)
+    local st = timelineState(id, #history, history, fateNeed(id))
 
     local at = #value + 1
     for i = #value, 1, -1 do
         if value[i].role == "user" then at = i; break end
     end
-    table.insert(value, at, { role = "system", content = cbs(worldNote(left, blocked, scenario(id))) })
+    table.insert(value, at, { role = "system", content = cbs(worldNote(left, st, scenario(id), fullPlot(id))) })
     return value
 end)
 
@@ -320,9 +427,9 @@ end)
 listenEdit("editDisplay", function(id, value, meta)
     if type(value) ~= "string" or not value:find("[IY:", 1, true) then return value end
     local index = meta and tonumber(meta.index)
-    local blocked = blockedUpTo(id, index and index + 1 or 0)
+    local st = timelineState(id, index and index + 1 or 0, nil, fateNeed(id))
     local en = isEnglish(id)
     return (value:gsub("%[IY:[^%]\n]*%]", function(status)
-        return "\n\n" .. statusCard(status, blocked, en) .. "\n\n"
+        return "\n\n" .. statusCard(status, st, en) .. "\n\n"
     end))
 end)

@@ -107,7 +107,8 @@ check('&lt;script&gt;' in h and 'a &lt; b &amp; c' in h and '능력' not in h, '
 h = display("[IY: 429. 7.01 (D-82) | 15:00 | 연회장 | 미공개 || None]", 0)
 check('ks-runin' not in h, '"None" thought skipped')
 
-# blocked chain shows in upcoming per message index
+# blocked chain shows in upcoming per message index (운명의 개입 끄기 = 표시 1번에 막힘)
+toggles(kc_fate='2')
 set_chat([
     ("char", "a [IY: 429. 7.07 (D-76) | 15:00 | x | y]"),
     ("user", "intercept"),
@@ -121,7 +122,7 @@ check('루스란, 다프네야 협력 수락' not in h_after and '다프네야 �
 check('<!-- TIMER: E2 blocked -->' in h_after, 'timer comment kept (invisible in HTML)')
 
 # request note
-toggles()
+toggles(kc_fate='2')
 note = request()[2][1]
 print(note, '\n')
 check('Ruslan agrees to work with Daphneya' not in note.split('Stopped')[0] or True, 'note built')
@@ -139,6 +140,81 @@ set_chat([("char", "x [IY: 429. 9.25 | 15:00 | x | y]"), ("user", "go")])
 toggles(kc_scenario='2')
 n = request()[2][1]
 check('[E15] after D-Day If the rebellion succeeds' in n and 'novel' not in n.lower(), 'after D-Day ending note neutral')
+
+# ---- 운명의 개입 (보통 2번 / 강하게 3번 / 끄기 1번)
+BASE = [
+    ("char", "a [IY: 429. 7.07 (D-76) | 15:00 | x | y]"),
+    ("user", "intercept"),
+    ("char", "b\n<!-- TIMER: E2 blocked -->\n[IY: 429. 7.08 (D-75) | 15:00 | x | y]"),
+    ("user", "go"),
+]
+LATER = "c [IY: 429. 7.10 (D-73) | 15:00 | x | y]"
+set_chat(BASE + [("char", LATER), ("user", "go")])
+toggles()
+n = request()[2][1]
+check('Fate pushes back' in n and '[E2] Daphneya → Ruslan: thwarted by USER 1 of the 2 times' in n and 'By 7.13 (D-70)' in n, 'fate default: one mark -> rebound with deadline')
+check('Stopped by' not in n and 'is attempted again by its deadline' in n, 'fate default: nothing stopped yet, fate rule present')
+check('once, in the response where it happens' in n, 'mark rule says once')
+h = display(LATER, 4)
+items = re.findall(r'<li><b>([^<]+)</b><span>([^<]+)</span></li>', h)
+check(items[0] == ('곧', '다프네야 → 루스란 접촉 (다른 길로)') and len(items) == 4 and items[2] == ('D-55', '루스란, 다프네야 협력 수락'), f'display rebound first, dependents still ahead {items}')
+toggles(kc_language='1')
+check('<li><b>Soon</b><span>Daphneya → Ruslan (another way)</span></li>' in display(LATER, 4), 'rebound label EN')
+toggles()
+AFTER = "d [IY: 429. 7.14 (D-69) | 15:00 | x | y]"
+set_chat(BASE + [("char", AFTER), ("user", "go")])
+n = request()[2][1]
+check('Fate pushes back' not in n and 'is attempted again' not in n and 'it came about anyway by another route' in n.split('Already set in motion')[1].split('Rules:')[0], 'deadline passed -> came about anyway, no fate rule')
+check('곧' not in display(AFTER, 4), 'no rebound after deadline')
+SECOND = "c\n<!-- TIMER: E2 blocked -->\n[IY: 429. 7.11 (D-72) | 15:00 | x | y]"
+set_chat(BASE + [("char", SECOND), ("user", "go")])
+n = request()[2][1]
+stopped = n.split('Stopped by')[1].split('Rules:')[0]
+check('[E2]' in stopped and '[E4]' in stopped and '[E12]' in stopped and 'Fate pushes back' not in n, 'second mark -> stopped for good + chain')
+toggles(kc_fate='1')
+n = request()[2][1]
+check('2 of the 3 times' in n and 'By 7.16 (D-67)' in n and 'Stopped by' not in n, 'strong: two marks still rebound, deadline from last mark')
+toggles(kc_fate='2')
+set_chat(BASE + [("char", LATER), ("user", "go")])
+n = request()[2][1]
+check('Fate pushes back' not in n and '[E4]' in n.split('Stopped by')[1] and 'is attempted again' not in n, 'fate off: one mark stops')
+toggles()
+PRE = [("char", "a [IY: 429. 7.22 (D-61) | 15:00 | x | y]"), ("user", "warn Piache"),
+       ("char", "b\n<!-- TIMER: E5 blocked -->\n[IY: 429. 7.23 (D-60) | 15:00 | x | y]"), ("user", "go"),
+       ("char", "c [IY: 429. 7.28 (D-55) | 15:00 | x | y]")]
+set_chat(PRE)
+h = display(PRE[4][1], 4)
+items = re.findall(r'<li><b>([^<]+)</b><span>([^<]+)</span></li>', h)
+check(items[0] == ('곧', '다프네야 → 피아체 접촉 (다른 길로)') and all('피아체 접촉' not in t for d, t in items[1:]), f'preempted event shows once as rebound {items}')
+set_chat(PRE + [("user", "go")])
+n = request()[2][1]
+check('[E5] Daphneya → Piache: thwarted by USER 1 of the 2' in n and 'By 8.08 (D-44)' in n, 'preempt: deadline counts from the event date')
+E0 = [("char", "<!-- TIMER: E0 blocked -->\n[IY: 429. 6.23 (D-90) | 15:00 | x | y]"), ("user", "go")]
+set_chat(E0)
+n = request()[2][1]
+check('[E0] Daphneya\'s quiet preparations: thwarted' in n and 'By 6.28 (D-85)' in n, 'ongoing scheme rebound')
+
+set_chat(BASE + [("char", LATER), ("user", "go")]); display(LATER, 4)
+set_chat([BASE[0], BASE[1], ("char", "b (mark removed by editing)\n[IY: 429. 7.08 (D-75) | 15:00 | x | y]"), BASE[3], ("char", LATER), ("user", "go")])
+check('Fate pushes back' not in request()[2][1], 'edited-out mark is gone at send time (same cache key)')
+
+# ---- 원작 줄거리 '전부'
+set_chat([("char", LATER), ("user", "go")])
+toggles()
+n = request()[2][1]
+check('[E14]' not in n and 'Do not foreshadow events that are not listed here.' in n, 'plot default: only window')
+toggles(kc_plot='1')
+n = request()[2][1]
+ahead = n.split('Still ahead, to the end')[1].split('Rules:')[0]
+check('[E13]' in ahead and '[E14]' in ahead and '[E15] after D-Day If the rebellion succeeds' in ahead, 'plot full: whole course incl. ending')
+check('You know the whole course' in n and 'Do not foreshadow events that are not listed' not in n and 'remembers as a reader' in n, 'plot full rules')
+toggles(kc_plot='1', kc_scenario='2')
+n = request()[2][1]
+check('novel' not in n.lower() and '[E15]' in n, 'plot full + native: neutral wording')
+toggles(kc_plot='1', kc_fate='2')
+set_chat([("char", "<!-- TIMER: E2 blocked -->\n<!-- TIMER: E5 blocked -->\n<!-- TIMER: E9 blocked -->\n<!-- TIMER: E12 blocked -->\n[IY: 429. 7.10 (D-73) | 15:00 | x | y]"), ("user", "go")])
+n = request()[2][1]
+check('[E14]' in n.split('Stopped by')[1] and '[E15]' in n.split('Stopped by')[1] and 'Still ahead' in n, 'plot full: blocked rebellion and ending stay stopped')
 
 # perma buttons
 G.setPermaFree("id"); check(G.VARS['perma'] == 'fm_free', 'setPermaFree')

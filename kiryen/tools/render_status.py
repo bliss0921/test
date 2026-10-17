@@ -19,6 +19,11 @@ lua = LuaRuntime(unpack_returned_tuples=True)
 lua.execute(open(os.path.join(HERE, 'test_lua.py'), encoding='utf-8').read().split("MOCK = r'''", 1)[1].split("'''", 1)[0])
 lua.execute(m['trigger'][0]['effect'][0]['code'])
 G = lua.globals()
+def set_chat(msgs):
+    lua.execute('CHAT = {}')
+    for role, data in msgs:
+        G.CHAT[len(G.CHAT) + 1] = lua.table_from({'role': role, 'data': data})
+
 def disp(text, idx, en=False):
     lua.execute('TOGGLES = {}')
     if en: G.TOGGLES['toggle_kc_language'] = '1'
@@ -48,6 +53,9 @@ cards = {
     'greeting': risu_classes(panel) + '<p>…셀레니아였다. 잠시 침묵하던 유저의 입술이 천천히 열렸다.</p>' + risu_classes(disp(GREET, -1)),
     'ko': PROSE + risu_classes(disp(KO, 4)),
     'en': '<p>Hedwig\'s gaze drifted across the training ground.</p>' + risu_classes(disp(EN, 4, True)),
+    'fate': (set_chat([('char', 'a [IY: 429. 8.01 (D-51) | 10:00 | x | y]'), ('user', '편지를 가로챈다'),
+                      ('char', 'b\n<!-- TIMER: E5 blocked -->\n[IY: 429. 8.03 (D-49) | 10:00 | x | y]'), ('user', 'go')]) or '')
+            + '<p>(다프네야의 편지를 가로챈 다음 날)</p>' + risu_classes(disp('[IY: 429. 8.04 (D-48) | 14:00 | 남궁 정원 | 시간 정지 || 피아체 | 오늘따라 정원이 낯설다.]', 4)),
     'alone_free': risu_classes(disp(ALONE, 4)) + '<p>(자유 시작)</p>' + risu_classes(disp('[IY: ? | ? | ? | ?]', -1)),
 }
 BASE = f"""@font-face{{font-family:'Gowun Batang';src:url({FONTS}/GowunBatang-Regular.ttf);font-weight:400}}
